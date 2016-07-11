@@ -1,8 +1,5 @@
 PulpMod
 ===================
-Table of content
--------------
-[TOC]
 
 Introduction
 -------------
@@ -15,12 +12,7 @@ What is it ?
 
 
 
-**PulpMod** is a space gamemode for Garry's mod. It is inspired by *Final Frontier*[^ff], *Spacebuild* and *Pulsar*[^pul]. In a nutshell, it is a cooperative space simulator. You make your ship, you put it into space and you live your life in space. You can do several things up there such as exploring, mining or fighting other ships. The goal of this gamemode is to make the players feel like they are evolving in a huge space.
-
-  [^pul]: *Pulsar* official site: http://www.pulsarthegame.com/.
-  
-  [^ff]: *Final Frontier* post: https://facepunch.com/showthread.php?t=1277720.
-  
+**PulpMod** is a space gamemode for Garry's mod. It is inspired by *Final Frontier*, *Spacebuild* and *Pulsar*. In a nutshell, it is a cooperative space simulator. You make your ship, you put it into space and you live your life in space. You can do several things up there such as exploring, mining or fighting other ships. The goal of this gamemode is to make the players feel like they are evolving in a huge space.
 
 
 #### Space simulation
