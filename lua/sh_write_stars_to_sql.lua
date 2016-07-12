@@ -10,32 +10,35 @@ end
 
 local startTime = SysTime() 
 
-local str = file.Read("addons/grand_espace/data/galaxy.txt","GAME")
+http.Fetch("https://dl.dropboxusercontent.com/u/47284930/galaxy.txt", function(str, len)
 
-if not str then
-	print("Error at reading the file.")
-	return
-end
+	print("Downloaded " ..tostring(len) .. " bytes of data.")
 
-sql.Begin()
-sql.Query("DROP TABLE IF EXISTS "..TABLE_NAME)
-sql.Query("CREATE TABLE "..TABLE_NAME.."(id INTEGER, x FLOAT, y FLOAT)")
+	sql.Begin()
+	sql.Query("DROP TABLE IF EXISTS "..TABLE_NAME)
+	sql.Query("CREATE TABLE "..TABLE_NAME.."(id INTEGER, x FLOAT, y FLOAT)")
 
 
-local t = string.Split(str, "\n")
-local stars = {}
+	local t = string.Split(str, "\n")
+	local stars = {}
 
-for k,v in pairs( t ) do
-	if v == "" then
-		continue
+	for k,v in pairs( t ) do
+		if v == "" then
+			continue
+		end
+		local data = string.Split(v, ",")
+
+		sql.Query("INSERT INTO "..TABLE_NAME.." VALUES ("..data[1]..","..data[3]..","..data[2]..")")
+	    
 	end
-	local data = string.Split(v, ",")
-
-	sql.Query("INSERT INTO "..TABLE_NAME.." VALUES ("..data[1]..","..data[3]..","..data[2]..")")
-    
-end
-sql.Commit()
+	sql.Commit()
 
 
 
-print("Wrote the stars in the SQL table in " .. tostring(SysTime()-startTime) .."s")
+	print("Wrote the stars in the SQL table in " .. tostring(SysTime()-startTime) .."s")
+
+end,
+function()
+	print("Could not download the star map.")
+
+end)
