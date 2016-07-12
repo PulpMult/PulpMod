@@ -32,6 +32,7 @@ if CLIENT then
 
 	net.Receive("Grand_Espace - Synchronize the world", function( len )
 
+		local curtime = SysTime()
 		local t = net.ReadTable()
 
 		for _,v in pairs(t) do
@@ -44,11 +45,14 @@ if CLIENT then
 
 			local s = World.spaceships[id]
 
+
+			s.velocity = (galaxyPos-s:getGalaxyPos()) / (curtime-(s.lastUpdate or 0))
+
 			s:setGalaxyPos( galaxyPos )
 			s:setGridPos( gridPos )
 			s:setWorldPos( worldPos )
 
-
+			s.lastUpdate = curtime
 
 			s.id = id
 

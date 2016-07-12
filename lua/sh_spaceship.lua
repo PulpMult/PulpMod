@@ -95,6 +95,10 @@ end
 
 function Spaceship:getGalaxyPos( )
 
+	if SERVER then
+		return self.galaxyPos + Vector(math.cos(CurTime()), math.sin(CurTime()),0)
+	end
+
 	return self.galaxyPos
 
 end
