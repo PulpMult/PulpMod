@@ -5,7 +5,7 @@ local TABLE_NAME = Grand_Espace_TABLE_NAME
 
 if sql.TableExists(TABLE_NAME) then
 	print("The star table already exists.")
-	--return
+	return
 end
 
 local startTime = SysTime() 
