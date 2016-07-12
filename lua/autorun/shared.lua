@@ -1,12 +1,12 @@
 AddCSLuaFile()
 
+GrandEspace = {}
+
 include("sh_player_functions.lua")
 include("sh_world.lua")
 include("sh_spaceship.lua")
 include("sh_write_stars_to_sql.lua")
 include("sh_map.lua")
-
-GrandEspace = {}
 
 if World then
 	World.removeEverything()
