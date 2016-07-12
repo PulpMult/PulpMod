@@ -37,7 +37,7 @@ else
 		
 	end 	
 
-	local function drawGrid( w, h, window, gridSpace, gridColor)
+	function GrandEspace.drawGrid ( x0, y0, w, h, window, gridSpace, gridColor)
 	
 		surface.SetDrawColor( gridColor )
 
@@ -50,7 +50,7 @@ else
 		for i=-lineCountX/2, lineCountX/2 do
 			
 			local offset = w/2 + offsetX0 + i * gridSpace * pxPerUnit 
-			surface.DrawLine(offset, 0, offset, h )
+			surface.DrawLine(x0+offset, y0, x0+offset, y0+h )
 
 		end
 
@@ -61,12 +61,12 @@ else
 		for i=-lineCountY/2, lineCountY/2 do
 			
 			local offset = h/2 + offsetY0 + i * gridSpace * pxPerUnit
-			surface.DrawLine(0, offset, w, offset )
+			surface.DrawLine(x0, y0+offset, x0+w, y0+offset )
 
 		end
 
-		surface.DrawLine(-5+w/2,-5+h/2,5+w/2,5+h/2)
-		surface.DrawLine(-5+w/2,5+h/2,5+w/2,-5+h/2)
+		surface.DrawLine(x0-5+w/2,y0-5+h/2,x0+5+w/2,y0+5+h/2)
+		surface.DrawLine(x0-5+w/2,y0+5+h/2,x0+5+w/2,y0-5+h/2)
 
 	end
 
@@ -84,7 +84,7 @@ else
 
 	end
 
-	local function drawImages( w, h, window, zoom )
+	local function drawImages( x0, y0, w, h, window, zoom )
 
 		assert(w and h and window and zoom)
 
@@ -104,7 +104,7 @@ else
 				if isRectInRect( pos1, size1, pos2, size2 ) then
 
 					surface.SetMaterial( material_map[zoom][x+1][y+1] )
-					surface.DrawTexturedRect( pos2.x - size2.x, pos2.y - size2.y, size2.x*2, size2.y*2 )
+					surface.DrawTexturedRect( x0+pos2.x - size2.x, y0+pos2.y - size2.y, size2.x*2, size2.y*2 )
 
 				end
 			end
@@ -112,7 +112,7 @@ else
 
 	end
 
-	local function drawStars( w, h, window )
+	function GrandEspace.drawStars( x0, y0, w, h, window )
 
 		assert(w and h and window)
 
@@ -124,15 +124,20 @@ else
 		local coef = zoom%1
 
 		surface.SetDrawColor( Color(255,255,255,255 * (1-coef) ) )
-		drawImages( w, h, window, math.Clamp(zoom1, 1, 4) )
+		drawImages( x0, y0, w, h, window, math.Clamp(zoom1, 1, 4) )
 
 		surface.SetDrawColor( Color(255,255,255,255 * coef) )
-		drawImages( w, h, window, math.Clamp(zoom2, 1, 4) )
+		drawImages( x0, y0, w, h, window, math.Clamp(zoom2, 1, 4) )
 
 	end
 
-	GrandEspace.drawStars = drawStars
-	GrandEspace.drawGrid = drawGrid
+	local drawStars = function( w, h, window )
+		return GrandEspace.drawStars( 0, 0, w, h, window)
+	end
+	local drawGrid = function( w, h, window, gridSpace, gridColor )
+		return GrandEspace.drawGrid( 0, 0, w, h, window, gridSpace, gridColor)
+	end
+	
 
 	local PANEL = {}
 
@@ -269,8 +274,10 @@ else
 
 	function PANEL:Think()
 
-		-- Hello 
-
+		local s = LocalPlayer():getSpaceship()
+		if s then 
+			self.window.pos = s:getGalaxyPos()-- + (s.velocity or Vector())*(SysTime()-s.lastUpdate)/10
+		end
 	end
 
 	vgui.Register( "Grand_Espace - MapPanel", PANEL, "Panel" )
