@@ -14,7 +14,6 @@ function Spaceship.new()
 	self.gridPos   = Vector()
 	self.worldPos  = Vector()
 
-
 	self.bb_pos = Vector()
 	self.bb_size = Vector()
 
@@ -80,7 +79,7 @@ function Spaceship:setEntities( e )
 	end
 
 	self.bb_pos = (minV+maxV)/2
-	self.bb_size = (maxV-minV)/2
+	self.bb_size = (maxV-minV)
 	self.entities = e
 
 end
@@ -163,7 +162,7 @@ end
 function Spaceship:isIn( pos )
 
 	local p = pos - self.bb_pos
-	local s = self.bb_size
+	local s = self.bb_size / 2
 
 	return math.max( p.x/s.x, p.y/s.y, p.z/s.z  ) <= 1
 

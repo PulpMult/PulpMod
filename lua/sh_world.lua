@@ -3,16 +3,6 @@ World.__index = World
 
 World.spaceships = {}
 
-function World.removeEverything()
-
-	for k,v in pairs(World.spaceships) do
-		
-		World.removeSpaceshipByID(k)
-
-	end
-
-end
-
 function World.addSpaceship( s )
 
 	assert( s and istable(s) )
