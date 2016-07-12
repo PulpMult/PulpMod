@@ -20,8 +20,9 @@ function TOOL:LeftClick( trace )
 	spaceship:setEntities( e )
 	spaceship:setGridPos( Vector() )
 	spaceship:setGalaxyPos( Vector() )
-	spaceship:setWorldPos( Vector() )
 	World.addSpaceship( spaceship )
+	
+	GrandEspace.pocket.allocate( spaceship )
 	
 	return true
 end
