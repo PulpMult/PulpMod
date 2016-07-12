@@ -2,34 +2,6 @@ if CLIENT then return end
 
 AddCSLuaFile()
 
-function addCSLuaFileRecur(name, len)
-
-	if not len then 
-		len = #name + 2
-	end
-
-	local files, directories = file.Find(name .. "/*", "GAME");
-
-	for _, f in pairs(files) do
-
-
-		local name = string.sub(name,len) .. "/" .. f
-		if string.sub(name,len) == "" then
-			name =  f
-		end
-
-		print("Adding ",name)
-		AddCSLuaFile(name)
-	end
-
-	for _, d in pairs(directories) do
-		addCSLuaFileRecur(name .. "/" .. d, len);
-	end
-
-end
-
-addCSLuaFileRecur("addons/grand_espace/lua")
-
 print("----> [Grand espace executed serverside.] <----")
 
 --[[
