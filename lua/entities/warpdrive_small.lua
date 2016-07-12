@@ -11,7 +11,12 @@ ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 	Name: Initialize
 -----------------------------------------------------------]]
 function ENT:Initialize()
-	if CLIENT then return end
+	if CLIENT then
+		self.spaceship = nil
+		self.lastClick = CurTime()
+		self.stars = nil
+		return
+	end
 
 	self:SetModel("models/props_combine/combine_intmonitor003.mdl")
 	self:SetMoveType(MOVETYPE_VPHYSICS)
@@ -67,10 +72,34 @@ local function isCursorOnButton(curX, curY, x, y, w, h)
 	return curX > x and curX < x + w and curY > y and curY < y + h
 end
 
+-- Regrouping stencil calls for better readability
+local function stencilStart()
+	render.SetStencilEnable(true)
+	render.ClearStencil()
+	render.SetStencilWriteMask(4)
+	render.SetStencilTestMask(4)
+	render.SetStencilReferenceValue(4)
+	render.SetStencilFailOperation(STENCILOPERATION_KEEP)
+	render.SetStencilZFailOperation(STENCILOPERATION_KEEP)
+	render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
+	render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
+end
+
+local function stencilSwitch()
+	render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
+end
+
+local function stencilEnd()
+	render.SetStencilReferenceValue(1)	-- Fix the holo bug with the physgun
+	render.ClearStencil()
+	render.SetStencilEnable(false)
+end
+
 -- Compute and define variables only once when possible
 local black = Color(0, 0, 0, 255)
 local black2 = Color(0, 0, 0, 240)
 local black3 = Color(50, 50, 50, 240)
+local black4 = Color(50, 50, 50, 255)
 local gray = Color(150, 150, 150, 255)
 local white = Color(255, 255, 255, 255)
 local red2 = Color(100, 0, 0, 240)
@@ -112,6 +141,13 @@ local titleSizeY = 7/titleScale
 local titleCenterX = titleSizeX/2
 local titleCenterY = titleSizeY/2
 
+local BUTTON_PREV = 1
+local BUTTON_NEXT = 2
+local BUTTON_JUMP = 3
+
+local window = { pixelPerUnit = 150, pos = Vector(0, 0, 0) }
+local location = "[Unknown location]"
+
 function ENT:Draw()
 	self:DrawModel()
 
@@ -119,15 +155,29 @@ function ENT:Draw()
 	local camPos = self:GetPos() + self:GetForward()*27 + self:GetUp()*49 - self:GetRight()*15
 	local camAngle = self:LocalToWorldAngles(Angle(90, 0, 0))
 	local curX, curY = getScreenCursorPos(LocalPlayer():GetEyeTrace(), camPos, scrScale, camAngle)
+	local click = 0
 	cam.Start3D2D(camPos, camAngle, scrScale)
+		-- Draw the stars map
 		surface.SetDrawColor(black)
+		stencilStart()
 		surface.DrawRect(0, 0, scrSizeX, scrSizeY)
-		draw.SimpleText("WARP DRIVE OFFLINE", "WarpDriveConsole", scrCenterX, scrCenterY, Color(204, 0, 0, math.abs(math.sin(CurTime()))*255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		stencilSwitch()
+		GrandEspace.drawStars(0, 0, scrSizeX, scrSizeY, window)
+		GrandEspace.drawGrid(0, 0, scrSizeX, scrSizeY, window, 0.5, black4)
+		stencilEnd()
+
+		-- Warp drive status text
+		if not self.spaceship then
+			draw.SimpleText("WARP DRIVE OFFLINE", "WarpDriveConsole", scrCenterX, scrCenterY, Color(204, 0, 0, math.abs(math.sin(CurTime()))*255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		end
 
 		-- <Prev button
 		surface.SetDrawColor(black2)
 		if isCursorOnButton(curX, curY, button1X, button1Y, button1W, button1H) then
 			surface.SetDrawColor(black3)
+			if self:IsClicking() then
+				click = BUTTON_PREV
+			end
 		end
 		surface.DrawRect(button1X, button1Y, button1W, button1H)
 		draw.SimpleText("<Prev", "WarpDriveConsole", button1TextX, button1TextY, gray, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
@@ -136,6 +186,9 @@ function ENT:Draw()
 		surface.SetDrawColor(black2)
 		if isCursorOnButton(curX, curY, button2X, button2Y, button2W, button2H) then
 			surface.SetDrawColor(black3)
+			if self:IsClicking() then
+				click = BUTTON_NEXT
+			end
 		end
 		surface.DrawRect(button2X, button2Y, button2W, button2H)
 		draw.SimpleText("Next>", "WarpDriveConsole", button2TextX, button2TextY, gray, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
@@ -144,10 +197,12 @@ function ENT:Draw()
 		surface.SetDrawColor(red2)
 		if isCursorOnButton(curX, curY, button3X, button3Y, button3W, button3H) then
 			surface.SetDrawColor(red3)
+			if self:IsClicking() then
+				click = BUTTON_JUMP
+			end
 		end
 		surface.DrawRect(button3X, button3Y, button3W, button3H)
 		draw.SimpleText("JUMP!", "WarpDriveConsole", button3TextX, button3TextY, gray, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-
 	cam.End3D2D()
 
 	-- Draw the location or jump drive bar
@@ -155,6 +210,29 @@ function ENT:Draw()
 		surface.SetDrawColor(black2)
 		surface.DrawRect(0, 0, titleSizeX, titleSizeY)
 
-		draw.SimpleText("[Unknown location]", "WarpDriveConsole", titleCenterX, titleCenterY, white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(location, "WarpDriveConsole", titleCenterX, titleCenterY, white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	cam.End3D2D()
+
+	-- Check for button press
+	if click > 0 then
+		if click == BUTTON_PREV then
+			if not self.stars then self.stars = self:GetClosestStars(0, 0, 10) end
+			location = self.stars.id[1]
+		elseif click == BUTTON_NEXT then
+			if not self.stars then self.stars = self:GetClosestStars(0, 0, 10) end
+		elseif click == BUTTON_JUMP then
+			self.stars = nil
+		end
+	end
+end
+
+function ENT:IsClicking()
+	if LocalPlayer():KeyDown(IN_USE) and CurTime() - self.lastClick > 0.25 then
+		self.lastClick = CurTime()
+		return true
+	end
+end
+
+function ENT:GetClosestStars(x, y, count)
+	return sql.Query("SELECT * FROM " .. Grand_Espace_TABLE_NAME .. " WHERE ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))) <= " .. math.pow(20/100,2) .. " ORDER BY ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))) LIMIT " .. count .. ";")
 end
