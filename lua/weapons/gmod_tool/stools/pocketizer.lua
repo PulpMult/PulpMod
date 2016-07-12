@@ -3,8 +3,8 @@ TOOL.Name = "#tool.pocketizer.name"
 
 if CLIENT then
 	language.Add("tool.pocketizer.name", "Pocketizer tool")
-	language.Add("tool.pocketizer.desc", "Use it to transport spaceships to pockets.")
-	language.Add("tool.pocketizer.0", "Click to transport your spaceship.")
+	language.Add("tool.pocketizer.desc", "Use it to transform your contraption into a spaceship.")
+	language.Add("tool.pocketizer.0", "Click on your spaceship.")
 end
 
 function TOOL:LeftClick( trace )
@@ -13,6 +13,10 @@ function TOOL:LeftClick( trace )
 	local ent = trace.Entity
 	
 	if not IsValid( ent ) then return end
+	if ent.parentSpaceship then
+		print("This is already a spaceship.")
+		return
+	end
 
 	local e = constraint.GetAllConstrainedEntities( ent )
 
@@ -20,9 +24,12 @@ function TOOL:LeftClick( trace )
 	spaceship:setEntities( e )
 	spaceship:setGridPos( Vector() )
 	spaceship:setGalaxyPos( Vector() )
+
+	GrandEspace.pocket.allocate( spaceship )
+	GrandEspace.pocket.moveShipToPocket( spaceship )
+
 	World.addSpaceship( spaceship )
 	
-	GrandEspace.pocket.allocate( spaceship )
 	
 	return true
 end

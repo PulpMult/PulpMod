@@ -1,3 +1,5 @@
+AddCSLuaFile()
+
 World = {}
 World.__index = World
 
@@ -10,7 +12,7 @@ function World.addSpaceship( s )
 	print("Adding a spaceship to the world:")
 	print(" - Galaxy position: "..tostring(s:getGalaxyPos()))
 	print(" - Grid position: "..tostring(s:getGridPos()))
-	print(" - Real position: "..tostring(s:getWorldPos()))
+	print(" - Pocket position: "..tostring(s:getPocketPos()))
 
 	s.id = table.insert( World.spaceships, s )
 
@@ -27,7 +29,7 @@ if CLIENT then
 
 		for _,v in pairs(t) do
 
-			local id, galaxyPos, gridPos, worldPos, e = v[1], v[2], v[3], v[4], v[5]
+			local id, galaxyPos, gridPos, pocketPos, e = v[1], v[2], v[3], v[4], v[5]
 
 			if not World.spaceships[id] then
 				World.spaceships[id] = Spaceship.new()
@@ -39,7 +41,7 @@ if CLIENT then
 
 			s:setGalaxyPos( galaxyPos )
 			s:setGridPos( gridPos )
-			s:setWorldPos( worldPos )
+			s:setPocketPos( pocketPos )
 
 			s.lastUpdate = curtime
 
@@ -85,7 +87,7 @@ else
 				end
 			end
 			
-			t[#t+1] = { k, v:getGalaxyPos(), v:getGridPos(), v:getWorldPos(), e }
+			t[#t+1] = { k, v:getGalaxyPos(), v:getGridPos(), v:getPocketPos(), e }
 
 		end
 

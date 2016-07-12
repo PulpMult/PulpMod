@@ -1,8 +1,15 @@
 if CLIENT then return end
 
-AddCSLuaFile()
-
 print("----> [Grand espace executed serverside.] <----")
+
+AddCSLuaFile("cl_init.lua")
+AddCSLuaFile("shared.lua")
+
+include("shared.lua")
+include("sv_pockets.lua")
+
+
+
 
 --[[
 	SV: Function to create a new spaceship easily
@@ -12,41 +19,15 @@ local function makeThatASpaceship(ent)
 	if not IsValid(ent) then return end
 
 	local e = constraint.GetAllConstrainedEntities(ent)
-	local m = 0
-	local mp = Vector()
-	local radius = 0
-
-	for k,v in pairs(e) do
-		local propMass = 1
-		local po = v:GetPhysicsObject()
-		if IsValid(po) then
-			propMass = po:GetMass()
-		end
-
-		m = m+propMass
-		mp = mp + v:GetPos()*propMass
-	end
-
-	mp = mp/m
-
-	for k,v in pairs(e) do
-		
-		local a,b = v:WorldSpaceAABB()
-
-		local pos = v:GetPos()
-		local tr = (pos-mp):Length() + math.max((a-pos):Length(), (b-pos):Length())
-		if tr > radius then
-			radius = tr
-		end
-
-	end
-	radius = math.ceil(radius)
-
+	
 	local spaceship = Spaceship.new()
 	spaceship:setEntities(e)
+	local a,b = spaceship:getAABB()
 	spaceship:setGridPos( Vector() )
 	spaceship:setGalaxyPos( Vector() )
-	spaceship:setWorldPos(mp)
+	spaceship:setPocketPos(a)
+	spaceship:setPocketSize(b)
+
 	World.addSpaceship( spaceship )
 
 end
@@ -56,3 +37,4 @@ for k,v in pairs( ents.GetAll() ) do
 		makeThatASpaceship(v)
 	end
 end
+

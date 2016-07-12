@@ -12,7 +12,7 @@ function Spaceship.new()
 
 	self.galaxyPos = Vector()
 	self.gridPos   = Vector()
-	self.worldPos  = Vector()
+	self.pocketPos  = Vector()
 
 	self.bb_pos = Vector()
 	self.bb_size = Vector()
@@ -38,18 +38,21 @@ function Spaceship:setEntities( e )
 
 	assert( e and istable(e) )
 
+	local entities = {}
+
 	-- Calculate the bounding box limits
 	local minV = Vector()
 	local maxV = Vector()
 
 
-	if e[1] then
+	if IsValid(e[1]) then
 		minV, maxV = e[1]:WorldSpaceAABB()
 	end
 
 	for k,v in pairs(e) do
 
 		v.parentSpaceship = self
+		entities[#entities+1] = v
 
 		if IsValid(v) then
 
@@ -69,7 +72,7 @@ function Spaceship:setEntities( e )
 
 	self.bb_pos = (minV+maxV)/2
 	self.bb_size = (maxV-minV)
-	self.entities = e
+	self.entities = entities
 
 end
 
@@ -93,9 +96,15 @@ function Spaceship:getGalaxyPos( )
 
 end
 
-function Spaceship:getWorldPos()
+function Spaceship:getPocketPos()
 
-	return self.worldPos
+	return self.pocketPos
+
+end
+
+function Spaceship:getPocketSize()
+
+	return self.pocketSize
 
 end
 
@@ -114,38 +123,17 @@ function Spaceship:setGalaxyPos( pos )
 end
 
 
-function Spaceship:setWorldPos( pos )
+function Spaceship:setPocketPos( pos )
 
 	assert( pos )
-	
-	if CLIENT then return end
-	
-	if not self.entities then return end
-	
-	self.worldPos = pos
+	self.pocketPos = pos
 
-	local relative = self:getAABB()
-	
-	for k, v in pairs( self.entities ) do
-		local phys = v:GetPhysicsObject()
-			
-		if IsValid( phys ) then
-			phys:EnableMotion( false )
-		end
-		
-		v:SetPos( pos + v:GetPos() - relative )
-	end
-	
-	players = player.GetAll()
-	
-	for k, v in pairs( players ) do
-		if IsValid( v ) and v:IsPlayer() then
-			if self:isIn( v:GetPos() ) then
-				v:SetPos( v:GetPos() - relative )
-			end
-		end
-	end
-	
+end
+
+function Spaceship:setPocketSize( size )
+
+	self.pocketSize = size
+
 end
 
 function Spaceship:isIn( pos )
@@ -157,10 +145,12 @@ function Spaceship:isIn( pos )
 
 end
 
+
 hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", function(e) 
 
 	if e.parentSpaceship then
 		
+		print("Removed " .. tostring(v) .. " from spaceship " .. tostring(e.parentSpaceship.id) )
 		table.RemoveByValue( e.parentSpaceship.entities, e )
 
 	end
