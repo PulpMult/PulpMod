@@ -17,6 +17,7 @@ function ENT:Initialize()
 		self.range = 2
 		self.starId = 1
 		self.window = { pixelPerUnit = 150, pos = Vector(0, 0, 0) }
+		self.starPos = Vector()
 		self.locationText = "[Unknown location]"
 		self.distanceText = "0 AU"
 		return
@@ -170,6 +171,7 @@ function ENT:Draw()
 		if self.parentSpaceship then
 			shipx = self.parentSpaceship:getGalaxyPos().x
 			shipy = self.parentSpaceship:getGalaxyPos().y
+			self.window.pos = Vector(shipx, shipy, 0)
 		end
 
 		GrandEspace.drawStars(0, 0, scrSizeX, scrSizeY, self.window)
@@ -221,10 +223,16 @@ function ENT:Draw()
 	cam.End3D2D()
 
 	-- Draw the location or jump drive bar
+	local distance = 0
+	if self.parentSpaceship then
+		distance = self.starPos:Distance(self.parentSpaceship:getGalaxyPos())
+	end
+	
 	cam.Start3D2D(self:GetPos() + self:GetForward()*31.8 + self:GetUp()*45 - self:GetRight()*28.5, self:LocalToWorldAngles(Angle(90, -19, 0)), titleScale)
 		surface.SetDrawColor(black2)
 		surface.DrawRect(0, 0, titleSizeX, titleSizeY)
 
+		self.distanceText = math.Round(distance, 2) .. " AU"
 		draw.SimpleText(self.locationText, "WarpDriveConsole", titleCenterX, titleCenterY - 25, white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		draw.SimpleText(self.distanceText, "WarpDriveConsole", titleCenterX, titleCenterY + 25, white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	cam.End3D2D()
@@ -237,19 +245,18 @@ function ENT:Draw()
 		elseif click == BUTTON_NEXT then
 			self.starId = math.min(#self.stars, self.starId + 1)
 		elseif click == BUTTON_JUMP then
-			self.parentSpaceship:setGalaxyPos(Vector(self.stars[self.starId].x, self.stars[self.starId].y, 0))
-			self.window.pos = Vector(self.stars[self.starId].x, self.stars[self.starId].y, 0)
-			self.stars = nil
-			self.starId = 1
+			local distance = self.starPos:Distance(self.parentSpaceship:getGalaxyPos())
+			if self.stars and #self.stars > 0 and distance <= self.range then
+				self.parentSpaceship:setGalaxyPos(self.starPos)
+				self.stars = nil
+				self.starId = 1
+			end
 		end
 		if self.stars and #self.stars > 0 then
-			local starPos = Vector(self.stars[self.starId].x, self.stars[self.starId].y, 0)
-			local distance = starPos:Distance(self.parentSpaceship:getGalaxyPos())
+			self.starPos = Vector(self.stars[self.starId].x, self.stars[self.starId].y, 0)
 			self.locationText = "[Star " .. self.stars[self.starId].id .. "]"
-			self.distanceText = math.Round(distance, 2) .. " AU"
 		else
 			self.locationText = "[Unknown location]"
-			self.distanceText = "0 AU"
 		end
 	end
 end
