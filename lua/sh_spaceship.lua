@@ -1,12 +1,7 @@
-local DRAG_FACTOR = 10
-
---[[
-SpaceShip
-]]
+AddCSLuaFile()
 
 Spaceship = {}
 Spaceship.__index = Spaceship
-
 
 --[[
 	SH: Constructor of Spaceship
@@ -30,9 +25,6 @@ function Spaceship.new()
 	return self
 
 end
-
-
-
 
 --[[
 	SH: Accessor functions
@@ -143,10 +135,6 @@ function Spaceship:isIn( pos )
 	return math.max( p.x/s.x, p.y/s.y, p.z/s.z  ) <= 1
 
 end
-
-
-
-
 
 hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", function(e) 
 

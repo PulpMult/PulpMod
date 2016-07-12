@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Jun 21 17:50:03 2016
 
-@author: Nicolas
-"""
-
-BASEPATH = "E:/Program Files (x86)/Steam/SteamApps/common/GarrysMod/garrysmod/addons/grand_espace/data/"
+BASEPATH = "E:/Program Files (x86)/Steam/SteamApps/common/GarrysMod/garrysmod/addons/grand_espace/materials/"
 
 import matplotlib.pyplot as plt
 from scipy import misc

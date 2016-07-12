@@ -1,5 +1,7 @@
 if SERVER then
 
+	AddCSLuaFile()
+
 	util.AddNetworkString("Grand_Espace - Show map")
 
 	hook.Add("ShowSpare1", "Grand_Espace - Show map", function( ply )
@@ -17,7 +19,23 @@ else
 
 	local GALAXY_SIZE = 10
 	local MAX_ZOOM_COEF = 3
-	---local IMAGE_SIZE  = 1000
+
+	local material_map = {}
+	for zoomCoef=0, MAX_ZOOM_COEF do
+
+		local zoom = math.pow(2, zoomCoef)
+		material_map[zoomCoef+1] = {}
+
+		for x=0, zoom-1 do
+
+			material_map[zoomCoef+1][x+1] = {}
+			for y=0, zoom-1 do
+				local path = "materials/zoom" .. tostring(zoom) .. "/map" .. tostring(x) .. "x" .. tostring(y) .. ".png"
+				material_map[zoomCoef+1][x+1][y+1] = Material( path )
+			end
+		end
+		
+	end 	
 
 	local function drawGrid( w, h, window, gridSpace, gridColor)
 	
@@ -50,7 +68,6 @@ else
 		surface.DrawLine(-5+w/2,-5+h/2,5+w/2,5+h/2)
 		surface.DrawLine(-5+w/2,5+h/2,5+w/2,-5+h/2)
 
-
 	end
 
 	local function isRectInRect( pos1, size1, pos2, size2)
@@ -65,26 +82,7 @@ else
 
 		return n1 <= 1 or n2 <= 1
 
-
 	end
-
-	local material_map = {}
-	for zoomCoef=0, MAX_ZOOM_COEF do
-
-		local zoom = math.pow(2, zoomCoef)
-		material_map[zoomCoef+1] = {}
-
-		for x=0, zoom-1 do
-
-			material_map[zoomCoef+1][x+1] = {}
-			for y=0, zoom-1 do
-				local path = "data/zoom" .. tostring(zoom) .. "/map" .. tostring(x) .. "x" .. tostring(y) .. ".png"
-				material_map[zoomCoef+1][x+1][y+1] = Material( path )
-			end
-		end
-		
-	end 
-
 
 	local function drawImages( w, h, window, zoom )
 
@@ -100,32 +98,17 @@ else
 
 
 		for x=0, nbRowImages-1 do
-
 			for y=0, nbRowImages-1 do
 
 				local pos2 = posOriginToScreen + Vector(x,y) * size2 * 2
-
 				if isRectInRect( pos1, size1, pos2, size2 ) then
-				
-					--zmath.randomseed(1000*x+y)
-					--surface.SetDrawColor(Color(math.random(0,255),math.random(0,255),math.random(0,255)))
-					
+
 					surface.SetMaterial( material_map[zoom][x+1][y+1] )
 					surface.DrawTexturedRect( pos2.x - size2.x, pos2.y - size2.y, size2.x*2, size2.y*2 )
-
-					--[[
-					surface.SetFont( "DermaLarge" )
-					surface.SetTextColor( 255, 255, 255, 255 )
-					surface.SetTextPos( pos2.x, pos2.y )
-					surface.DrawText( tostring(x) .."x" .. tostring(y) )
-					]]
 
 				end
 			end
 		end
-
-		--surface.SetDrawColor(Color(255,0,0))
-		--surface.DrawRect(10+50,50,100,100)
 
 	end
 
@@ -148,6 +131,8 @@ else
 
 	end
 
+	GrandEspace.drawStars = drawStars
+	GrandEspace.drawGrid = drawGrid
 
 	local PANEL = {}
 
@@ -176,22 +161,17 @@ else
 
 	function PANEL:Paint( w, h )
 
-		local startTime = SysTime()
-		local startMem = collectgarbage("count")
-
 		local pxPerUnit = self.window.pixelPerUnit
 		local windowPos = self.window.pos
 		
 		surface.SetDrawColor( 25, 25, 25, 255 )
 		surface.DrawRect(0,0,w,h)
 
-		
 		drawStars( w, h, self.window )
 		drawGrid( w, h, self.window, self.gridSpace, Color(100,100,100))
 
 		local a,b = self:LocalCursorPos()
 		local cursorPos = ( Vector(a,b) - Vector(w,h)/2) / pxPerUnit + windowPos
-
 
 		local result = sql.Query("SELECT * FROM " .. Grand_Espace_TABLE_NAME .. " WHERE ((X-(" .. cursorPos.x .."))*(X-(" .. cursorPos.x .."))+(Y-(" .. cursorPos.y .."))*(Y-(" .. cursorPos.y .."))) <= " .. math.pow(20/pxPerUnit,2) .. " ORDER BY ((X-(" .. cursorPos.x .."))*(X-(" .. cursorPos.x .."))+(Y-(" .. cursorPos.y .."))*(Y-(" .. cursorPos.y .."))) LIMIT 1")
 		if result then
@@ -231,12 +211,6 @@ else
 			surface.DrawLine(posStarScreen.x, posStarScreen.y-rectH*2,posStarScreen.x, rectH*2+posStarScreen.y)
 
 		end
-		--print(result2)
-
-		local dt = SysTime() - startTime
-		hud_usageInfo(dt, (collectgarbage("count") - startMem)/dt)
-
-
 
 	end
 
@@ -289,16 +263,13 @@ else
 		local x = self.grabPosX - posX
 		local y = self.grabPosY - posY
 
-
-
 		self.window.pos = self.grabInitPos + Vector(x,y) / self.window.pixelPerUnit
 
 	end
 
 	function PANEL:Think()
 
-		--local t = CurTime()
-		--*self:setGalaxyPos( LocalPlayer():getGalaxyPos() )
+		-- Hello 
 
 	end
 
@@ -320,10 +291,10 @@ else
 		mapPanel:SetPos(2,24)
 		mapPanel:SetSize(w*scale - 4, h*scale - 26)
 
-
 	end
 
 	net.Receive("Grand_Espace - Show map", function()
+
 		showMap()
 		
 	end)

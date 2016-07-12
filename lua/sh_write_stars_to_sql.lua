@@ -1,4 +1,4 @@
---if SERVER then return end
+AddCSLuaFile()
 
 Grand_Espace_TABLE_NAME = "GrandEspace_stars"
 local TABLE_NAME = Grand_Espace_TABLE_NAME
