@@ -1,5 +1,5 @@
 TOOL.Category = "PulpMod"
-TOOL.Name = "Spawn Tool"
+TOOL.Name = "#tool.pm_spawn_tool.name"
 TOOL.Command = nil
 TOOL.ConfigName = ""
 TOOL.ClientConVar["selected"] = "prop_physics"
@@ -9,9 +9,9 @@ AddCSLuaFile()
 local warpdrives = { warpdrive_small = "Warp Drive (small)" }
 
 if CLIENT then
-	language.Add("Tool.pm_spawn_tool.name", "Spawn  tool")
-	language.Add("Tool.pm_spawn_tool.desc", "Use it to spawn spaceship components.")
-	language.Add("Tool.pm_spawn_tool.0", "Click to spawn the component.")
+	language.Add("tool.pm_spawn_tool.name", "Spawn tool")
+	language.Add("tool.pm_spawn_tool.desc", "Use it to spawn spaceship components.")
+	language.Add("tool.pm_spawn_tool.0", "Click to spawn the component.")
 
 	local function BuildSubNode(tree, name, arr, icon)
 		local sub = tree:AddNode(name)

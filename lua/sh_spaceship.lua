@@ -79,12 +79,14 @@ function Spaceship:setEntities( e )
 
 	end
 
-	
-
 	self.bb_pos = (minV+maxV)/2
 	self.bb_size = (maxV-minV)/2
 	self.entities = e
 
+end
+
+function Spaceship:getAABB()
+	return self.bb_pos, self.bb_size
 end
 
 function Spaceship:getGridPos( )
@@ -127,8 +129,35 @@ end
 function Spaceship:setWorldPos( pos )
 
 	assert( pos )
+	
+	if CLIENT then return end
+	
+	if not self.entities then return end
+	
 	self.worldPos = pos
 
+	local relative = self:getAABB()
+	
+	for k, v in pairs( self.entities ) do
+		local phys = v:GetPhysicsObject()
+			
+		if IsValid( phys ) then
+			phys:EnableMotion( false )
+		end
+		
+		v:SetPos( pos + v:GetPos() - relative )
+	end
+	
+	players = player.GetAll()
+	
+	for k, v in pairs( players ) do
+		if IsValid( v ) and v:IsPlayer() then
+			if self:isIn( v:GetPos() ) then
+				v:SetPos( v:GetPos() - relative )
+			end
+		end
+	end
+	
 end
 
 function Spaceship:isIn( pos )
