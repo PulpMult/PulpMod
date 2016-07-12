@@ -276,7 +276,7 @@ else
 
 		local s = LocalPlayer():getSpaceship()
 		if s then 
-			self.window.pos = s:getGalaxyPos()-- + (s.velocity or Vector())*(SysTime()-s.lastUpdate)/10
+			self.window.pos = s:getGalaxyPos() --+ (s.velocity or Vector())*(SysTime()-s.lastUpdate)/1e6 
 		end
 	end
 
