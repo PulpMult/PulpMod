@@ -24,7 +24,7 @@ if CLIENT then
 
 			local lastShip = ply:getSpaceship()
 			local currentShip = nil
-
+			
 			for k,v in pairs( World.spaceships ) do
 				
 				if v:isIn(pos) then
