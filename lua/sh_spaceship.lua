@@ -42,9 +42,10 @@ function Spaceship:setEntities( e )
 	local minV = Vector()
 	local maxV = Vector()
 
-	minV:Set(self.worldPos)
-	maxV:Set(self.worldPos)
 
+	if e[1] then
+		minV, maxV = e[1]:WorldSpaceAABB()
+	end
 
 	for k,v in pairs(e) do
 
@@ -52,27 +53,15 @@ function Spaceship:setEntities( e )
 
 		if IsValid(v) then
 
-			local p = v:GetPos()
-			local maxSizeBB = (v:OBBMaxs()-v:OBBMins()):Length()
-
-			if minV.x > p.x-maxSizeBB then
-				minV.x = p.x-maxSizeBB
-			end
-			if minV.y > p.y-maxSizeBB then
-				minV.y = p.y-maxSizeBB
-			end
-			if minV.z > p.z-maxSizeBB then
-				minV.z = p.z-maxSizeBB
-			end
-			if maxV.x < p.x+maxSizeBB then
-				maxV.x = p.x+maxSizeBB
-			end
-			if maxV.y < p.y+maxSizeBB then
-				maxV.y = p.y+maxSizeBB
-			end
-			if maxV.z < p.z+maxSizeBB then
-				maxV.z = p.z+maxSizeBB
-			end
+			local min, max = v:WorldSpaceAABB()
+			
+			minV.x = math.min( minV.x, min.x )
+			minV.y = math.min( minV.y, min.y )
+			minV.z = math.min( minV.z, min.z )
+			
+			maxV.x = math.max( maxV.x, max.x )
+			maxV.y = math.max( maxV.y, max.y )
+			maxV.z = math.max( maxV.z, max.z )
 
 		end
 
@@ -97,7 +86,7 @@ end
 function Spaceship:getGalaxyPos( )
 
 	if SERVER then
-		return self.galaxyPos + Vector(math.cos(CurTime()), math.sin(CurTime()),0)
+		return self.galaxyPos 
 	end
 
 	return self.galaxyPos
