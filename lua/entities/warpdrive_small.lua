@@ -13,10 +13,12 @@ ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 function ENT:Initialize()
 	if CLIENT then
 		self.lastClick = CurTime()
+		self.lastQuery = CurTime()
 		self.stars = nil
 		self.range = 2
 		self.starId = 1
 		self.window = { pixelPerUnit = 150, pos = Vector(0, 0, 0) }
+		self.starPos = Vector()
 		self.locationText = "[Unknown location]"
 		self.distanceText = "0 AU"
 		return
@@ -35,9 +37,21 @@ function ENT:Initialize()
 	self:SetAngles(self:GetAngles() + Angle(-90, 0, 0))
 end
 
--- CLIENT
-if SERVER then return end
+if SERVER then
+	util.AddNetworkString("PulpMod_WarpDrive_Jump")
+	net.Receive("PulpMod_WarpDrive_Jump", function(len, ply)
+			local ent = net.ReadEntity()
+			local pos = net.ReadVector()
 
+			if ent.parentSpaceship then
+				ent.parentSpaceship:setGalaxyPos(pos)
+			end
+	end)
+
+	return
+end
+
+-- CLIENT
 surface.CreateFont("WarpDriveConsole", {
 	font = "Arial",
 	extended = false,
@@ -170,6 +184,7 @@ function ENT:Draw()
 		if self.parentSpaceship then
 			shipx = self.parentSpaceship:getGalaxyPos().x
 			shipy = self.parentSpaceship:getGalaxyPos().y
+			self.window.pos = Vector(shipx, shipy, 0)
 		end
 
 		GrandEspace.drawStars(0, 0, scrSizeX, scrSizeY, self.window)
@@ -221,35 +236,47 @@ function ENT:Draw()
 	cam.End3D2D()
 
 	-- Draw the location or jump drive bar
+	local distance = 0
+	if self.parentSpaceship then
+		distance = self.starPos:Distance(self.parentSpaceship:getGalaxyPos())
+	end
+
 	cam.Start3D2D(self:GetPos() + self:GetForward()*31.8 + self:GetUp()*45 - self:GetRight()*28.5, self:LocalToWorldAngles(Angle(90, -19, 0)), titleScale)
 		surface.SetDrawColor(black2)
 		surface.DrawRect(0, 0, titleSizeX, titleSizeY)
 
+		self.distanceText = math.Round(distance, 2) .. " AU"
 		draw.SimpleText(self.locationText, "WarpDriveConsole", titleCenterX, titleCenterY - 25, white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		draw.SimpleText(self.distanceText, "WarpDriveConsole", titleCenterX, titleCenterY + 25, white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	cam.End3D2D()
 
 	-- Check for button press
 	if click > 0 and self.parentSpaceship then
-		if not self.stars then self.stars = self:GetClosestStars(self.parentSpaceship:getGalaxyPos().x, self.parentSpaceship:getGalaxyPos().y, 50, self.range) end
-		if click == BUTTON_PREV then
-			self.starId = math.max(1, self.starId - 1)
-		elseif click == BUTTON_NEXT then
-			self.starId = math.min(#self.stars, self.starId + 1)
-		elseif click == BUTTON_JUMP then
-			self.parentSpaceship:setGalaxyPos(Vector(self.stars[self.starId].x, self.stars[self.starId].y, 0))
-			self.window.pos = Vector(self.stars[self.starId].x, self.stars[self.starId].y, 0)
-			self.stars = nil
-			self.starId = 1
+		if not self.stars then 
+			self.stars = self:GetClosestStars(self.parentSpaceship:getGalaxyPos().x, self.parentSpaceship:getGalaxyPos().y, 50, self.range)
 		end
-		if self.stars and #self.stars > 0 then
-			local starPos = Vector(self.stars[self.starId].x, self.stars[self.starId].y, 0)
-			local distance = starPos:Distance(self.parentSpaceship:getGalaxyPos())
-			self.locationText = "[Star " .. self.stars[self.starId].id .. "]"
-			self.distanceText = math.Round(distance, 2) .. " AU"
-		else
-			self.locationText = "[Unknown location]"
-			self.distanceText = "0 AU"
+		if #self.stars > 0 then
+			if click == BUTTON_PREV then
+				self.starId = math.max(1, self.starId - 1)
+			elseif click == BUTTON_NEXT then
+				self.starId = math.min(#self.stars, self.starId + 1)
+			elseif click == BUTTON_JUMP then
+				local distance = self.starPos:Distance(self.parentSpaceship:getGalaxyPos())
+				if self.stars and #self.stars > 0 and distance <= self.range then
+					self.stars = nil
+					self.starId = 1
+
+					net.Start("PulpMod_WarpDrive_Jump")
+						net.WriteEntity(self)
+						net.WriteVector(self.starPos)		-- TODO: Fix lost precision !
+					net.SendToServer()
+				end
+			end
+			if self.stars and #self.stars > 0 then
+				self.starPos.x = self.stars[self.starId].x
+				self.starPos.y = self.stars[self.starId].y
+				self.locationText = "[Star " .. self.stars[self.starId].id .. "]"
+			end
 		end
 	end
 end
@@ -262,5 +289,10 @@ function ENT:IsClicking()
 end
 
 function ENT:GetClosestStars(x, y, count, range)
-	return sql.Query("SELECT * FROM " .. Grand_Espace_TABLE_NAME .. " WHERE ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))) <= " .. math.pow(range,2) .. " ORDER BY ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))) LIMIT " .. count .. ";")
+	local result = nil
+	if CurTime() - self.lastQuery > 0.5 then
+		result = sql.Query("SELECT * FROM " .. Grand_Espace_TABLE_NAME .. " WHERE ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))) <= " .. math.pow(range,2) .. " ORDER BY ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))) LIMIT " .. count .. ";")
+		self.lastQuery = CurTime()
+	end
+	return result
 end
