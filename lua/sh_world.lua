@@ -20,15 +20,17 @@ function World.addSpaceship( s )
 
 end
 
-local function vecToTbl(vec)
-	return { vec.x, vec.y, vec.z }
-end
-
-local function tblToVec(tbl)
-	return Vector(tbl[1], tbl[2], tbl[3])
-end
-
 if CLIENT then
+	-- Utility functions
+	local function vecToTbl(vec)
+		if not vec then return end
+		return { vec.x, vec.y, vec.z }
+	end
+
+	local function tblToVec(tbl)
+		if not tbl then return end
+		return Vector(tbl[1], tbl[2], tbl[3])
+	end
 
 	net.Receive("Grand_Espace - Synchronize the world", function( len )
 
@@ -45,67 +47,84 @@ if CLIENT then
 
 			local s = World.spaceships[id]
 			
-			s.velocity = (galaxyPos-s:getGalaxyPos()) / (curtime-(s.lastUpdate or 0))*1e6
+			if galaxyPos then
+				s.velocity = (galaxyPos-s:getGalaxyPos()) / (curtime-(s.lastUpdate or 0))*1e6
+				s:setGalaxyPos( galaxyPos )
+			end
 
-			s:setGalaxyPos( galaxyPos )
-			s:setGridPos( gridPos )
-			s:setPocketPos( pocketPos )
-			s:setPocketSize( pocketSize )
+			if gridPos then s:setGridPos( gridPos ) end
+			if pocketPos then s:setPocketPos( pocketPos ) end
+			if pocketSize then s:setPocketSize( pocketSize ) end
 
 			s.lastUpdate = curtime
 
 			s.id = id
 
-			s.notRemoved = true
+			if e then
+				local entities = {}
+				for _,ent in pairs(e) do
+					entities[#entities+1] = Entity(ent)
+				end
 
-			local entities = {}
-			for _,ent in pairs(e) do
-				entities[#entities+1] = Entity(ent)
+				s:setEntities( entities ) -- Will recalculate the bounding box each time O(n)
 			end
-
-			s:setEntities( entities ) -- Will recalculate the bounding box each time O(n)
 
 		end
 
-		for k,v in pairs(World.spaceships) do
-			if v.notRemoved then
-				v.notRemoved = nil
-			else
-				World.spaceships[k] = nil
+		if net.ReadBool() then
+			local newTable = {}
+			for _,v in pairs(net.ReadTable()) do
+				newTable[v] = World.spaceships[v]
 			end
+			World.spaceships = newTable
 		end
-
 
 	end)
 
-
-else 
+	-- Request sync
+	hook.Add("InitPostEntity", "PulpMod_SyncSpaceships", function()
+		net.Start("Grand_Espace - Synchronize the world")
+		net.SendToServer()
+	end)
+else -- SERVER
 
 	util.AddNetworkString("Grand_Espace - Synchronize the world")
 
-	hook.Add("Tick", "Grand_Espace - Synchronize the world", function()
+	local lastShipListing = CurTime()
 
+	local function syncSpaceships(players, force)
 		local t = {}
+		local spaceships = {}
 		-- TODO: Optimize this function so it sends only the required data
 		for k,v in pairs(assert(World.spaceships)) do
+			local spaceshipTable = v:getUpdateTable(force)
 
-			local e = {}
-			for key,ent in pairs(v:getEntities()) do
-				if IsValid(ent) then
-					e[#e+1] = ent:EntIndex()
-				end
+			if spaceshipTable then
+				t[#t+1] = spaceshipTable
 			end
-			
-			-- Convert vectors to table, because net.WriteVector has a huge precision loss. Numbers in tables are sent using
-			-- net.WriteDouble when calling net.WriteTable.
-			t[#t+1] = { k, vecToTbl(v:getGalaxyPos()), vecToTbl(v:getGridPos()), vecToTbl(v:getPocketPos()), v:getPocketSize(), e }
 
+			spaceships[#spaceships+1] = k
 		end
 
 		net.Start("Grand_Espace - Synchronize the world")
 			net.WriteTable(t)
-		net.Broadcast()
 
+			-- Don't send this too often !! Only for garbage collecting client side
+			local updateListing = CurTime() - lastShipListing > 1
+
+			net.WriteBool(updateListing)
+			if updateListing then
+				net.WriteTable(spaceships)
+				lastShipListing = CurTime()
+			end
+		net.Broadcast(players)
+	end
+
+	hook.Add("Tick", "Grand_Espace - Synchronize the world", function()
+		syncSpaceships(player.GetAll(), false)
 	end)
 
+	net.Receive("Grand_Espace - Synchronize the world", function(len, ply)
+		syncSpaceships(ply, true)
+	end)
 end
