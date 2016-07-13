@@ -81,7 +81,7 @@ if SERVER then
 				-- ... then, move the ship
 				local timername = "warp_" .. ent:EntIndex()
 				timer.Create(timername, 0, 0, function()
-					if not IsValid(ent) then
+					if not IsValid(ent) or not ent.parentSpaceship then
 						timer.Destroy(timername)
 						return
 					end

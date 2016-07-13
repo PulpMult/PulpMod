@@ -30,6 +30,18 @@ function TOOL:LeftClick( trace )
 
 	World.addSpaceship( spaceship )
 	
+	local ply = self:GetOwner()
+
+	undo.Create("Ship Pocketization")
+		undo.AddEntity( ply )
+		
+		undo.AddFunction( function( info, spaceship )
+			GrandEspace.pocket.moveShipFromPocket( spaceship )
+		end, spaceship)
+		
+		undo.SetPlayer(ply)
+		undo.SetCustomUndoText("Undone ship pocketizing.")
+	undo.Finish()
 	
 	return true
 end
