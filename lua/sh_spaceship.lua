@@ -38,7 +38,8 @@ function Spaceship.new()
 		gridPos = true,
 		pocketPos = true,
 		pocketSize = true,
-		entities = true
+		entities = true,
+		gridAngle = true
 	}
 
 	self.id = 0
@@ -206,6 +207,11 @@ function Spaceship:getUpdateTable(force)
 			end
 		end
 		data[6] = e
+	end
+
+	-- Synchronize grid angle
+	if self.dirty.gridAngle or force then
+		data[7] = self:getGridAngle()
 	end
 
 	self.dirty = {}

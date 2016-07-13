@@ -39,7 +39,7 @@ if CLIENT then
 		
 		for _,v in pairs(t) do
 
-			local id, galaxyPos, gridPos, pocketPos, pocketSize, gridAngle, e = v[1], tblToVec(v[2]), tblToVec(v[3]), tblToVec(v[4]), v[5], v[6], v[7]
+			local id, galaxyPos, gridPos, pocketPos, pocketSize, e, gridAngle = v[1], tblToVec(v[2]), tblToVec(v[3]), tblToVec(v[4]), v[5], v[6], v[7]
 
 			if not World.spaceships[id] then
 				World.spaceships[id] = Spaceship.new()
