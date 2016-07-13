@@ -13,6 +13,7 @@ function Spaceship.new()
 	self.galaxyPos = Vector()
 	self.gridPos   = Vector()
 	self.pocketPos  = Vector()
+	self.gridAngle = Angle()
 
 	self.bb_pos = Vector()
 	self.bb_size = Vector()
@@ -137,9 +138,21 @@ function Spaceship:setPocketSize( size )
 
 end
 
+function Spaceship:getGridAngle( )
+
+	return self.gridAngle
+
+end
+
+function Spaceship:setGridAngle( angle )
+
+	self.gridAngle = assert(angle)
+
+end
+
 function Spaceship:isIn( pos )
 
-	local p = pos - (self:getPocketPos() or self.bb_pos)
+	local p = pos - (self.bb_pos or self:getPocketPos() )
 	local s = (self:getPocketSize() or self.bb_size) / 2
 
 	return math.max( math.abs(p.x/s.x), math.abs(p.y/s.y), math.abs(p.z/s.z)  ) <= 1
@@ -158,6 +171,8 @@ hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", fun
 			if not e.parentSpaceship.id or e.parentSpaceship.id == 0 then return end
 			print( "Removed spaceship: " .. e.parentSpaceship.id )
 			World.spaceships[ e.parentSpaceship.id ] = nil
+			
+			hook.Call("Grand_Espace - Spaceship removal", {}, e.parentSpaceship)
 		end
 		
 	end

@@ -37,7 +37,7 @@ if CLIENT then
 		
 		for _,v in pairs(t) do
 
-			local id, galaxyPos, gridPos, pocketPos, pocketSize, e = v[1], tblToVec(v[2]), tblToVec(v[3]), tblToVec(v[4]), v[5], v[6]
+			local id, galaxyPos, gridPos, pocketPos, pocketSize, gridAngle, e = v[1], tblToVec(v[2]), tblToVec(v[3]), tblToVec(v[4]), v[5], v[6], v[7]
 
 			if not World.spaceships[id] then
 				World.spaceships[id] = Spaceship.new()
@@ -51,6 +51,7 @@ if CLIENT then
 			s:setGridPos( gridPos )
 			s:setPocketPos( pocketPos )
 			s:setPocketSize( pocketSize )
+			s:setGridAngle( gridAngle )
 
 			s.lastUpdate = curtime
 
@@ -98,7 +99,7 @@ else
 			
 			-- Convert vectors to table, because net.WriteVector has a huge precision loss. Numbers in tables are sent using
 			-- net.WriteDouble when calling net.WriteTable.
-			t[#t+1] = { k, vecToTbl(v:getGalaxyPos()), vecToTbl(v:getGridPos()), vecToTbl(v:getPocketPos()), v:getPocketSize(), e }
+			t[#t+1] = { k, vecToTbl(v:getGalaxyPos()), vecToTbl(v:getGridPos()), vecToTbl(v:getPocketPos()), v:getPocketSize(), v:getGridAngle(), e }
 
 		end
 
