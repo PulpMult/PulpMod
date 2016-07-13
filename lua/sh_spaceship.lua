@@ -44,7 +44,6 @@ function Spaceship:setEntities( e )
 	local minV = Vector()
 	local maxV = Vector()
 	
-	-- PULP, the first element doesn't exist on the server, only on the client apparently.
 	for k, v in pairs( e ) do
 		if IsValid( v ) then
 			minV, maxV = v:WorldSpaceAABB()
@@ -152,9 +151,15 @@ hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", fun
 
 	if e.parentSpaceship then
 		
-		print("Removed " .. tostring(v) .. " from spaceship " .. tostring(e.parentSpaceship.id) )
+		print("Removed " .. tostring(e) .. " from spaceship " .. tostring(e.parentSpaceship.id) )
 		table.RemoveByValue( e.parentSpaceship.entities, e )
-
+		
+		if e.parentSpaceship.entities == {} then
+			if not e.parentSpaceship.id or e.parentSpaceship.id == 0 then return end
+			
+			World.spaceships[ e.parentSpaceship.id ] = nil
+		end
+		
 	end
 
 end)

@@ -34,7 +34,7 @@ if CLIENT then
 
 		local curtime = SysTime()
 		local t = net.ReadTable()
-
+		
 		for _,v in pairs(t) do
 
 			local id, galaxyPos, gridPos, pocketPos, pocketSize, e = v[1], tblToVec(v[2]), tblToVec(v[3]), tblToVec(v[4]), v[5], v[6]
@@ -51,7 +51,6 @@ if CLIENT then
 			s:setGridPos( gridPos )
 			s:setPocketPos( pocketPos )
 			s:setPocketSize( pocketSize )
-
 
 			s.lastUpdate = curtime
 

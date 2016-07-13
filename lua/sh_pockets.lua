@@ -1,25 +1,16 @@
 AddCSLuaFile()
 
--- Doctor, pocketize a spaceship. You will have to fix the obvious issue you will see :P
--- If you could modify the spaceship class so it destroys itself and the pocket, it would be nice!
-
 if CLIENT then 
 
 	hook.Add("PostDrawOpaqueRenderables", "Grand_Espace - Draw pockets", function()
 
 		for id, ship in pairs(World.spaceships) do
 			render.DrawWireframeBox(ship:getPocketPos(), Angle(), -ship:getPocketSize()/2, ship:getPocketSize()/2, Color(255,255,255,255), 0 )
-			--local p, s = ship:getAABB()
-			--render.DrawWireframeBox( p, Angle(), -s/2, s/2, Color(255,255,255,255), 0 )
 		end
 	end)
 
 else
 	local pocket = {}
-	--local pockets = {} No need to store the pockets in a array, we will just iterate through the spaceships
-	-- We cannot store half the things in the array and half the things in the spaceships
-	-- It's way easier to put in in spaceship because all spaceships will automaticly have a pocket
-
 
 	local function isIn( bbpos, bbsize, pos )
 		local p = pos - bbpos
@@ -53,7 +44,7 @@ else
 			end
 		end
 
-		ship.bb_pos = self:getPocketPos() -- Now it moved...
+		ship.bb_pos = self:getPocketPos()
 
 	end
 
@@ -95,18 +86,10 @@ else
 		local attempts = 100
 
 		while not found and attempts > 0 do
-			--entryPos = VectorRand() * math.pow(2,13)
 			entryPos = Vector(math.random(-12000,12000),math.random(-12000,12000),math.random(0,7000))
 			found = true
 			attempts = attempts - 1
-			
-			--[[ Not needed, weird behaviours....
-			if not util.IsInWorld( entryPos - size / 2 ) or not util.IsInWorld( entryPos + size / 2 ) then
-				found = false
-				print("Not in the world.", entryPos)
-				continue
-			end
-			]]
+
 			if collideWithOtherPockets( entryPos, size ) then
 				found = false
 				continue
