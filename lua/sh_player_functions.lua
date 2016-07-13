@@ -37,7 +37,6 @@ if CLIENT then
 
 			if currentShip ~= lastShip then
 				
-				-- I doubt this line makes sense at all right now. - Doctor
 				ply:assignToSpaceship( currentShip )
 
 				if not lastShip then

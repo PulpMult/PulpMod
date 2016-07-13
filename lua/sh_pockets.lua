@@ -14,9 +14,7 @@ if CLIENT then
 		for _, v in pairs(World.spaceships) do
 			if v == ship then
 
-
 				render.SetColorMaterial()
-
 
 				render.SetStencilEnable(true)
 				render.ClearStencil()
@@ -31,7 +29,6 @@ if CLIENT then
 				render.DrawBox(ship:getPocketPos(), Angle(), ship:getPocketSize()/2, -ship:getPocketSize()/2, Color(0,255,0,255*0), 1 )
 			
 				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
-				
 	
 				render.DepthRange( 0, 0 ) 
 				render.SetMaterial(mat)
