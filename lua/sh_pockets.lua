@@ -2,11 +2,34 @@ AddCSLuaFile()
 
 if CLIENT then 
 
+
+
+
+	local mat = Material("color")
 	hook.Add("PostDrawOpaqueRenderables", "Grand_Espace - Draw pockets", function()
 
-		for id, ship in pairs(World.spaceships) do
-			render.DrawWireframeBox(ship:getPocketPos(), Angle(), -ship:getPocketSize()/2, ship:getPocketSize()/2, Color(255,255,255,255), 0 )
+		local ship = LocalPlayer():getSpaceship()
+		for _, v in pairs(World.spaceships) do
+			if v == ship then
+				render.SetMaterial(mat)
+				render.DrawBox(ship:getPocketPos(), Angle(), ship:getPocketSize()/2, -ship:getPocketSize()/2, Color(0,0,0,255), 1 )
+			else
+				render.DrawWireframeBox(v:getPocketPos(), Angle(), -v:getPocketSize()/2, v:getPocketSize()/2, Color(255,255,255,255), 1 )
+			end
 		end
+
+	end)
+
+	local blacklist = { player=true, viewmodel=true, physgun_beam=true}
+
+	hook.Add("Grand_Espace - LocalPlayer changed ship", "Do not render outside the ship", function( ship, lastship )
+		
+		for k,v in pairs( ents.GetAll() ) do
+			if IsValid(v) and not blacklist[v:GetClass()] then
+				v:SetNoDraw(v.parentSpaceship ~= ship)
+			end
+		end
+
 	end)
 
 else
@@ -38,7 +61,7 @@ else
 		
 		for k, v in pairs( players ) do
 			if IsValid( v ) then
-				if ship:isIn( v:GetPos() ) then
+				if ship:isIn( v:GetPos() ) or true then
 					v:SetPos( ship:getPocketPos() + v:GetPos() - relative )
 					v:assignToSpaceship( ship )
 				end
