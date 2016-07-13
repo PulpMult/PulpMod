@@ -44,12 +44,9 @@ function Spaceship:setEntities( e )
 	local minV = Vector()
 	local maxV = Vector()
 	
-	-- PULP, the first element doesn't exist on the server, only on the client apparently.
-	for k, v in pairs( e ) do
-		if IsValid( v ) then
-			minV, maxV = v:WorldSpaceAABB()
-			break
-		end
+	if table.Count(e) then
+		local _,v = next(e)
+		minV, maxV = v:WorldSpaceAABB()
 	end
 
 	for k,v in pairs(e) do
