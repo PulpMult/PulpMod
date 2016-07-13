@@ -20,6 +20,14 @@ function World.addSpaceship( s )
 
 end
 
+local function vecToTbl(vec)
+	return { vec.x, vec.y, vec.z }
+end
+
+local function tblToVec(tbl)
+	return Vector(tbl[1], tbl[2], tbl[3])
+end
+
 if CLIENT then
 
 	net.Receive("Grand_Espace - Synchronize the world", function( len )
@@ -29,7 +37,7 @@ if CLIENT then
 
 		for _,v in pairs(t) do
 
-			local id, galaxyPos, gridPos, pocketPos, pocketSize, e = v[1], v[2], v[3], v[4], v[5], v[6]
+			local id, galaxyPos, gridPos, pocketPos, pocketSize, e = v[1], tblToVec(v[2]), tblToVec(v[3]), tblToVec(v[4]), v[5], v[6]
 
 			if not World.spaceships[id] then
 				World.spaceships[id] = Spaceship.new()
@@ -89,7 +97,9 @@ else
 				end
 			end
 			
-			t[#t+1] = { k, v:getGalaxyPos(), v:getGridPos(), v:getPocketPos(), v:getPocketSize(), e }
+			-- Convert vectors to table, because net.WriteVector has a huge precision loss. Numbers in tables are sent using
+			-- net.WriteDouble when calling net.WriteTable.
+			t[#t+1] = { k, vecToTbl(v:getGalaxyPos()), vecToTbl(v:getGridPos()), vecToTbl(v:getPocketPos()), v:getPocketSize(), e }
 
 		end
 
