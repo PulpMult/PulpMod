@@ -11,8 +11,33 @@ if CLIENT then
 		local ship = LocalPlayer():getSpaceship()
 		for _, v in pairs(World.spaceships) do
 			if v == ship then
+
+
 				render.SetMaterial(mat)
+
+
+				render.SetStencilEnable(true)
+				render.ClearStencil()
+				render.SetStencilWriteMask(4)
+				render.SetStencilTestMask(4)
+				render.SetStencilReferenceValue(4)
+				render.SetStencilFailOperation(STENCILOPERATION_KEEP)
+				render.SetStencilZFailOperation(STENCILOPERATION_KEEP)
+				render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
+				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
+
 				render.DrawBox(ship:getPocketPos(), Angle(), ship:getPocketSize()/2, -ship:getPocketSize()/2, Color(0,0,0,255), 1 )
+			
+				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
+				
+				render.DrawSphere( ship:getPocketPos(), 1000, 50, 50, Color(255,0,0,255))
+
+				render.SetStencilReferenceValue(1)	-- Fix the holo bug with the physgun
+				render.ClearStencil()
+				render.SetStencilEnable(false)
+	
+
+
 			else
 				render.DrawWireframeBox(v:getPocketPos(), Angle(), -v:getPocketSize()/2, v:getPocketSize()/2, Color(255,255,255,255), 1 )
 			end
@@ -61,7 +86,7 @@ else
 		
 		for k, v in pairs( players ) do
 			if IsValid( v ) then
-				if ship:isIn( v:GetPos() ) or true then
+				if ship:isIn( v:GetPos() ) then
 					v:SetPos( ship:getPocketPos() + v:GetPos() - relative )
 					v:assignToSpaceship( ship )
 				end
