@@ -3,7 +3,82 @@ AddCSLuaFile()
 if CLIENT then 
 
 
+	local function norme( v, size )
 
+		return math.max(math.abs(v.x/size.x), math.abs(v.y/size.y), math.abs(v.z/size.z))
+
+	end
+
+	local function fromGridToWorld( myShip, pos, ang )
+
+		local a,b = WorldToLocal( pos or Vector(), ang or Vector(), myShip:getGridPos(), myShip:getGridAngle() )
+		return LocalToWorld( a, b, myShip:getPocketPos(), Angle() )
+	end
+	
+
+
+
+	hook.Add("PostDrawTranslucentRenderables", "Grand_Espace - Render other ships", function()
+
+		local ship = LocalPlayer():getSpaceship()
+		if not ship then return end
+
+		local gridPos = ship:getGridPos()
+		local gridAng = ship:getGridAngle()
+
+		local pocketPos = ship:getPocketPos()
+		local pocketSize = ship:getPocketSize()
+		local shootPos = LocalPlayer():GetShootPos()
+
+		for k,v in pairs(World.spaceships) do
+
+			if ship ~= v then
+			
+				for _,ent in pairs(v.entities) do
+
+
+					-- TT = TargetShip
+					-- S  = Our ship
+
+					local pos_TT, ang_TT = WorldToLocal( ent:GetPos(), ent:GetAngles(), v:getPocketPos(), Angle() )
+					local pos_grid,  ang_grid  = LocalToWorld( pos_TT, ang_TT, v:getGridPos(), v:getGridAngle())
+
+					
+					local targetPos, targetAngle = fromGridToWorld( ship, pos_grid, ang_grid )
+
+					local boxPos, norm, fraction = util.IntersectRayWithOBB( targetPos, shootPos-targetPos, pocketPos, Angle(), -pocketSize, pocketSize)
+
+
+					if boxPos then
+
+						local scaleDist = boxPos:Distance(shootPos)/targetPos:Distance(shootPos)
+						
+
+						local p = ent:GetPos()
+						local a = ent:GetAngles()
+						local scale = ent:GetModelScale()
+
+	
+						ent:SetPos(boxPos)
+						ent:SetAngles(targetAngle)
+						ent:SetModelScale(scale * scaleDist)
+
+						ent:DrawModel()
+
+						ent:SetModelScale(scale)
+						ent:SetAngles(a)
+						ent:SetPos(p)
+
+					end
+
+
+				end
+
+			end
+
+		end
+
+	end)
 
 
 	local mat = Material("materials/stars2.png")
@@ -11,12 +86,10 @@ if CLIENT then
 	hook.Add("PostDrawTranslucentRenderables", "Grand_Espace - Draw pockets", function()
 
 		local ship = LocalPlayer():getSpaceship()
-		for _, v in pairs(World.spaceships) do
-			if v == ship then
-
+		if ship then
+			
 
 				render.SetColorMaterial()
-
 
 				render.SetStencilEnable(true)
 				render.ClearStencil()
@@ -32,21 +105,29 @@ if CLIENT then
 			
 				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
 				
-	
-				render.DepthRange( 0, 0 ) 
+			
+				
 				render.SetMaterial(mat)
-				render.DrawSphere( ship:getPocketPos(), -ship:getPocketSize():Length()/2*0-16384, 50, 50, Color(255,255,255,255), false)
-				render.DepthRange( 0, 1 ) 
+				cam.Start3D( EyePos(), ship:getGridAngle() + EyeAngles() )
+					
+					render.DepthRange( 0, 0 ) 
+					render.DrawSphere( ship:getPocketPos(), -16384, 50, 50, Color(255,255,255,255), false)
+					render.DepthRange( 0, 1 ) 
+
+				cam.End3D()	
+				
 
 				render.SetStencilReferenceValue(1)	-- Fix the holo bug with the physgun
 				render.ClearStencil()
 				render.SetStencilEnable(false)
-	
 
+			
+		else
 
-			else
+			for _, v in pairs(World.spaceships) do
 				render.DrawWireframeBox(v:getPocketPos(), Angle(), -v:getPocketSize()/2, v:getPocketSize()/2, Color(255,255,255,255), 1 )
 			end
+
 		end
 
 	end)
