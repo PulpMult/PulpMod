@@ -23,7 +23,8 @@ else
 
 	local function isIn( bbpos, bbsize, pos )
 		local p = pos - bbpos
-		return math.max( p.x/bbsize.x/2, p.y/bbsize.y/2, p.z/bbsize.z/2  ) <= 1
+		
+		return math.max( p.x/(bbsize.x/2), p.y/(bbsize.y/2), p.z/(bbsize.z/2)  ) <= 1
 	end
 
 	function pocket.moveShipToPocket( ship )
