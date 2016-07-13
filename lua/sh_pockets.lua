@@ -40,6 +40,7 @@ else
 			if IsValid( v ) then
 				if ship:isIn( v:GetPos() ) then
 					v:SetPos( ship:getPocketPos() + v:GetPos() - relative )
+					v:assignToSpaceship( ship )
 				end
 			end
 		end

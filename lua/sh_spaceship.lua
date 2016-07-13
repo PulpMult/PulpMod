@@ -154,9 +154,9 @@ hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", fun
 		print("Removed " .. tostring(e) .. " from spaceship " .. tostring(e.parentSpaceship.id) )
 		table.RemoveByValue( e.parentSpaceship.entities, e )
 		
-		if e.parentSpaceship.entities == {} then
+		if table.Count( e.parentSpaceship.entities ) == 0 then
 			if not e.parentSpaceship.id or e.parentSpaceship.id == 0 then return end
-			
+			print( "Removed spaceship: " .. e.parentSpaceship.id )
 			World.spaceships[ e.parentSpaceship.id ] = nil
 		end
 		

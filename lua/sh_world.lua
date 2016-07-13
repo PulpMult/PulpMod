@@ -44,7 +44,7 @@ if CLIENT then
 			end
 
 			local s = World.spaceships[id]
-
+			
 			s.velocity = (galaxyPos-s:getGalaxyPos()) / (curtime-(s.lastUpdate or 0))*1e6
 
 			s:setGalaxyPos( galaxyPos )

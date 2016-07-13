@@ -37,6 +37,7 @@ if CLIENT then
 
 			if currentShip ~= lastShip then
 				
+				-- I doubt this line makes sense at all right now. - Doctor
 				ply:assignToSpaceship( currentShip )
 
 				if not lastShip then
@@ -47,7 +48,6 @@ if CLIENT then
 
 				hook.Call("Grand_Espace - LocalPlayer changed ship", {}, ply:getSpaceship(), lastShip)
 				
-
 			end
 
 		end
