@@ -7,3 +7,4 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+include("sv_resources.lua")
