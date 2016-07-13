@@ -44,9 +44,11 @@ function Spaceship:setEntities( e )
 	local minV = Vector()
 	local maxV = Vector()
 	
-	if table.Count(e) then
-		local _,v = next(e)
-		minV, maxV = v:WorldSpaceAABB()
+	for k, v in pairs( e ) do
+		if IsValid( v ) then
+			minV, maxV = v:WorldSpaceAABB()
+			break
+		end
 	end
 
 	for k,v in pairs(e) do
@@ -149,9 +151,15 @@ hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", fun
 
 	if e.parentSpaceship then
 		
-		print("Removed " .. tostring(v) .. " from spaceship " .. tostring(e.parentSpaceship.id) )
+		print("Removed " .. tostring(e) .. " from spaceship " .. tostring(e.parentSpaceship.id) )
 		table.RemoveByValue( e.parentSpaceship.entities, e )
-
+		
+		if table.Count( e.parentSpaceship.entities ) == 0 then
+			if not e.parentSpaceship.id or e.parentSpaceship.id == 0 then return end
+			print( "Removed spaceship: " .. e.parentSpaceship.id )
+			World.spaceships[ e.parentSpaceship.id ] = nil
+		end
+		
 	end
 
 end)
