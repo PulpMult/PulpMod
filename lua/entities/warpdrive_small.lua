@@ -83,6 +83,7 @@ if SERVER then
 				timer.Create(timername, 0, 0, function()
 					if not IsValid(ent) or not ent.parentSpaceship then
 						timer.Destroy(timername)
+						ent.traveling = false
 						return
 					end
 
@@ -261,7 +262,7 @@ function ENT:Draw()
 
 			-- Is the drive loading ?
 			if self.state == PHASE_LOADING then
-				draw.SimpleText("WARP DRIVE LOADING", "WarpDriveConsole", scrCenterX, scrCenterY, Color(204, 0, 0, math.abs(math.sin(CurTime()))*255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText("WARP DRIVE CHARGING", "WarpDriveConsole", scrCenterX, scrCenterY, Color(204, 0, 0, math.abs(math.sin(CurTime()))*255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			end
 		end
 

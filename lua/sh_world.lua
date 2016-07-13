@@ -70,15 +70,6 @@ if CLIENT then
 			end
 
 		end
-
-		if net.ReadBool() then
-			local newTable = {}
-			for _,v in pairs(net.ReadTable()) do
-				newTable[v] = World.spaceships[v]
-			end
-			World.spaceships = newTable
-		end
-
 	end)
 
 	-- Request sync
@@ -94,7 +85,7 @@ else -- SERVER
 
 	local function syncSpaceships(players, force)
 		local t = {}
-		local spaceships = {}
+
 		-- TODO: Optimize this function so it sends only the required data
 		for k,v in pairs(assert(World.spaceships)) do
 			local spaceshipTable = v:getUpdateTable(force)
@@ -102,21 +93,10 @@ else -- SERVER
 			if spaceshipTable then
 				t[#t+1] = spaceshipTable
 			end
-
-			spaceships[#spaceships+1] = k
 		end
 
 		net.Start("Grand_Espace - Synchronize the world")
 			net.WriteTable(t)
-
-			-- Don't send this too often !! Only for garbage collecting client side
-			local updateListing = CurTime() - lastShipListing > 1
-
-			net.WriteBool(updateListing)
-			if updateListing then
-				net.WriteTable(spaceships)
-				lastShipListing = CurTime()
-			end
 		net.Broadcast(players)
 	end
 

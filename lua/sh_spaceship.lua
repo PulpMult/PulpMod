@@ -78,6 +78,10 @@ function Spaceship:delete()
 		end
 	end
 	
+	net.Start("Grand_Espace - Delete Spaceship")
+		net.WriteInt(self.id, 32)
+	net.Broadcast()
+
 	self = nil
 end
 
@@ -281,3 +285,20 @@ hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", fun
 	end
 
 end)
+
+if SERVER then
+	util.AddNetworkString("Grand_Espace - Delete Spaceship")
+end
+
+if CLIENT then
+	net.Receive("Grand_Espace - Delete Spaceship", function(len)
+		local spaceship = World.spaceships[net.ReadInt(32)]
+
+		if spaceship then
+			for k,v in pairs(spaceship:getEntities()) do
+				v.parentSpaceship = nil
+				v:SetNoDraw( false )
+			end
+		end
+	end)
+end
