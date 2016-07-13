@@ -264,6 +264,7 @@ end
 function Spaceship:setGridAngle( angle )
 
 	self.gridAngle = assert(angle)
+	self.dirty.gridAngle = true
 
 end
 
