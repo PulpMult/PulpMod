@@ -1,12 +1,13 @@
 if CLIENT then return end
-
 local pocket = {}
 --local pockets = {} No need to store the pockets in a array, we will just iterate through the spaceships
 -- We cannot store half the things in the array and half the things in the spaceships
 -- It's way easier to put in in spaceship because all spaceships will automaticly have a pocket
+
+
 local function isIn( bbpos, bbsize, pos )
 	local p = pos - bbpos
-	return math.max( p.x/bbsize.x, p.y/bbsize.y, p.z/bbsize.z  ) <= 1
+	return math.max( p.x/bbsize.x*2, p.y/bbsize.y*2, p.z/bbsize.z*2  ) <= 1
 end
 
 function pocket.moveShipToPocket( ship )
@@ -15,7 +16,6 @@ function pocket.moveShipToPocket( ship )
 
 	local relative = ship:getAABB()
 
-	
 	for k, v in pairs( ship.entities ) do
 		local phys = v:GetPhysicsObject()
 			
@@ -40,6 +40,33 @@ function pocket.moveShipToPocket( ship )
 
 end
 
+local function collideWithOtherPockets( entryPos, size )
+	for k, v in pairs( World.spaceships ) do
+
+		local pocketPos = v:getPocketPos()
+		local pocketSize = v:getPocketSize()
+
+		if pocketPos and pocketSize then
+			if isIn( pocketPos, pocketSize, entryPos - size / 2 ) or isIn( pocketPos, pocketSize, entryPos + size / 2 ) then
+				return true
+			end
+		end
+	end
+	return false
+
+end
+
+local function isSomethingThere( entryPos, size )
+	local tr = util.TraceHull( {
+		start = entryPos,
+		endpos = entryPos,
+		mins = entryPos - size/2,
+		maxs = entryPos + size/2,
+		mask = MASK_SHOT_HULL
+	} )
+	return tr.Hit
+end
+
 function pocket.allocate( spaceship )
 
 	local pos, size = spaceship:getAABB()
@@ -48,42 +75,38 @@ function pocket.allocate( spaceship )
 	size = size + Vector( offset, offset, offset )
 	
 	local found = false
-	local entryPos = VectorRand() * 1000
-	
-	while not found do
+	local entryPos = Vector()
+	local attempts = 100
+
+	while not found and attempts > 0 do
+		--entryPos = VectorRand() * math.pow(2,13)
+		entryPos = Vector(math.random(-12000,12000),math.random(-12000,12000),math.random(0,7000))
 		found = true
+		attempts = attempts - 1
 		
+		--[[ Not needed, weird behaviours....
 		if not util.IsInWorld( entryPos - size / 2 ) or not util.IsInWorld( entryPos + size / 2 ) then
 			found = false
+			print("Not in the world.", entryPos)
+			continue
 		end
-		
-		for k, v in pairs( World.spaceships ) do
-
-			local pocketPos = v:getPocketPos()
-			local pocketSize = v:getPocketSize()
-
-			if pocketPos and pocketSize then
-				if isIn( pocketPos, pocketSize, entryPos - size / 2 ) or isIn( pocketPos, pocketSize, entryPos + size / 2 ) then
-					found = false
-					break
-				end
-			end
+		]]
+		if collideWithOtherPockets( entryPos, size ) then
+			found = false
+			continue
 		end
-		
-		entryPos = VectorRand() * 1000
+		if isSomethingThere( entryPos, size ) then
+			found = false
+			continue
+		end
 	end
-	
-	--local p = { pos = pos, size = size, ship = spaceship }
-	
-	--table.insert( pockets, p )
-	
-	spaceship:setPocketPos( entryPos )
-	spaceship:setPocketSize( entryPos )
 
-	--spaceship.pocket = p
-
+	if not found then
+		print("The position could not be found.")
+	else
+		spaceship:setPocketPos( entryPos )
+		spaceship:setPocketSize( size )
+	end
 end
-
-
 
 GrandEspace.pocket = pocket

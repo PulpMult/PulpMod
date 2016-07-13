@@ -9,8 +9,6 @@ include("shared.lua")
 include("sv_pockets.lua")
 
 
-
-
 --[[
 	SV: Function to create a new spaceship easily
 ]]
