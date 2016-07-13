@@ -41,6 +41,7 @@ function Spaceship:delete()
 		if IsValid( v ) then
 			v.parentSpaceship = nil
 			v:SetPos( self.originalPos + v:GetPos() - relative )
+			v:SetNoDraw( false )
 		end
 	end
 	
@@ -191,7 +192,8 @@ end
 
 
 hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", function(e) 
-
+	e:SetNoDraw( false )
+	
 	if e.parentSpaceship then
 		
 		print("Removed " .. tostring(e) .. " from spaceship " .. tostring(e.parentSpaceship.id) )
