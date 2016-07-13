@@ -1,16 +1,8 @@
 if SERVER then
 	AddCSLuaFile()
 else
-	function buildCPanel_Ships( Panel )
-		-- I shall continue working on it later in the evening.
-		
-		Panel:Clear()
-		
-		local label = vgui.Create( "DLabel", Panel )
-		
-		label:SetText( "This is a label." )
-		
-		label:Dock( TOP )
+	function buildCPanel_Ships( CPanel )
+		CPanel:AddControl("Header", { Text = "Ship's Available", Description = "Select a ship and press the button to join its crew." })
 	end
 	
 	hook.Add( "PopulateToolMenu", "Grand_Espace - Populate Tool Menu", function()

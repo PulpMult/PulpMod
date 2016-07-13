@@ -68,14 +68,14 @@ else
 
 	local function isIn( bbpos, bbsize, pos )
 		local p = pos - bbpos
-		
-		return math.max( p.x/(bbsize.x/2), p.y/(bbsize.y/2), p.z/(bbsize.z/2)  ) <= 1
+		local s = bbsize / 2
+
+		return math.max( math.abs(p.x/s.x), math.abs(p.y/s.y), math.abs(p.z/s.z)  ) <= 1
 	end
 
 	function pocket.moveShipToPocket( ship )
-
 		assert(ship)
-
+		
 		local relative = ship:getAABB()
 
 		for k, v in pairs( ship.entities ) do
@@ -100,7 +100,11 @@ else
 		end
 
 		ship.bb_pos = self:getPocketPos()
-
+		ship:setOriginalPos( relative )
+	end
+	
+	function pocket.moveShipFromPocket( ship )
+		ship:delete()
 	end
 
 	local function collideWithOtherPockets( entryPos, size )

@@ -14,7 +14,7 @@ function Spaceship.new()
 	self.gridPos   = Vector()
 	self.pocketPos  = Vector()
 	self.gridAngle = Angle()
-	
+
 	self.originalPos = Vector()
 
 	self.bb_pos = Vector()
@@ -192,9 +192,11 @@ function Spaceship:setGridAngle( angle )
 end
 
 function Spaceship:setOriginalPos( pos )
-
 	self.originalPos = pos
+end
 
+function Spaceship:setOriginalPos( pos )
+	self.originalPos = pos
 end
 
 function Spaceship:isIn( pos )
