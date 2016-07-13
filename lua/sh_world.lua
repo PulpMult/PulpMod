@@ -29,7 +29,7 @@ if CLIENT then
 
 		for _,v in pairs(t) do
 
-			local id, galaxyPos, gridPos, pocketPos, e = v[1], v[2], v[3], v[4], v[5]
+			local id, galaxyPos, gridPos, pocketPos, pocketSize, e = v[1], v[2], v[3], v[4], v[5], v[6]
 
 			if not World.spaceships[id] then
 				World.spaceships[id] = Spaceship.new()
@@ -42,6 +42,8 @@ if CLIENT then
 			s:setGalaxyPos( galaxyPos )
 			s:setGridPos( gridPos )
 			s:setPocketPos( pocketPos )
+			s:setPocketSize( pocketSize )
+
 
 			s.lastUpdate = curtime
 
@@ -87,7 +89,7 @@ else
 				end
 			end
 			
-			t[#t+1] = { k, v:getGalaxyPos(), v:getGridPos(), v:getPocketPos(), e }
+			t[#t+1] = { k, v:getGalaxyPos(), v:getGridPos(), v:getPocketPos(), v:getPocketSize(), e }
 
 		end
 

@@ -26,7 +26,7 @@ function TOOL:LeftClick( trace )
 	spaceship:setGalaxyPos( Vector() )
 
 	GrandEspace.pocket.allocate( spaceship )
-	--GrandEspace.pocket.moveShipToPocket( spaceship )
+	GrandEspace.pocket.moveShipToPocket( spaceship )
 
 	World.addSpaceship( spaceship )
 	

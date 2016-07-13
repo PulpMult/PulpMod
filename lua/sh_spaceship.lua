@@ -70,8 +70,8 @@ function Spaceship:setEntities( e )
 
 	end
 
-	self.bb_pos = (minV+maxV)/2
-	self.bb_size = (maxV-minV)
+	self.bb_pos = Vector((minV+maxV)/2)
+	self.bb_size = Vector(maxV-minV)
 	self.entities = entities
 
 end
