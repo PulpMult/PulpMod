@@ -327,6 +327,9 @@ function ENT:Draw()
 			elseif click == BUTTON_JUMP then
 				local distance = self.starPos:Distance(self.parentSpaceship:getGalaxyPos())
 				if self.stars and #self.stars > 0 and distance <= self.range then
+					self.stars = nil
+					self.starId = 1
+
 					net.Start("PulpMod_WarpDrive")
 						net.WriteEntity(self)
 						net.WriteFloat(PHASE_LOADING)
