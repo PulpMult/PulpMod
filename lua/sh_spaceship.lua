@@ -44,11 +44,17 @@ function Spaceship:setEntities( e )
 	local minV = Vector()
 	local maxV = Vector()
 	
+<<<<<<< HEAD
 	for k, v in pairs( e ) do
 		if IsValid( v ) then
 			minV, maxV = v:WorldSpaceAABB()
 			break
 		end
+=======
+	if table.Count(e) then
+		local _,v = next(e)
+		minV, maxV = v:WorldSpaceAABB()
+>>>>>>> origin/master
 	end
 
 	for k,v in pairs(e) do
