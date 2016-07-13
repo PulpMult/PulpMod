@@ -3,6 +3,17 @@ AddCSLuaFile()
 Spaceship = {}
 Spaceship.__index = Spaceship
 
+-- Utility functions
+local function vecToTbl(vec)
+	if not vec then return end
+	return { vec.x, vec.y, vec.z }
+end
+
+local function tblToVec(tbl)
+	if not tbl then return end
+	return Vector(tbl[1], tbl[2], tbl[3])
+end
+
 --[[
 	SH: Constructor of Spaceship
 ]]
@@ -21,6 +32,14 @@ function Spaceship.new()
 	self.bb_size = Vector()
 
 	self.entities = {}
+
+	self.dirty = {
+		galaxyPos = true,
+		gridPos = true,
+		pocketPos = true,
+		pocketSize = true,
+		entities = true
+	}
 
 	self.id = 0
 
@@ -60,6 +79,10 @@ function Spaceship:delete()
 		end
 	end
 	
+	net.Start("Grand_Espace - Delete Spaceship")
+		net.WriteInt(self.id, 32)
+	net.Broadcast()
+
 	self = nil
 end
 
@@ -113,6 +136,8 @@ function Spaceship:setEntities( e )
 	self.bb_pos = Vector((minV+maxV)/2)
 	self.bb_size = Vector(maxV-minV)
 	self.entities = entities
+
+	self.dirty.entities = true
 end
 
 function Spaceship:getAABB()
@@ -147,6 +172,47 @@ function Spaceship:getPocketSize()
 
 end
 
+function Spaceship:getUpdateTable(force)
+	if not next(self.dirty) and not force then return end
+
+	local data = { [1] = self.id }
+
+	-- Synchronize galaxy pos
+	if self.dirty.galaxyPos or force then
+		data[2] = vecToTbl(self:getGalaxyPos())
+	end
+
+	-- Synchronize grid pos
+	if self.dirty.gridPos or force then
+		data[3] = vecToTbl(self:getGridPos())
+	end
+
+	-- Synchronize pocket pos
+	if self.dirty.pocketPos or force then
+		data[4] = vecToTbl(self:getPocketPos())
+	end
+
+	-- Synchronize pocket size
+	if self.dirty.pocketSize or force then
+		data[5] = self:getPocketSize()
+	end
+
+	-- Synchronize entities
+	if self.dirty.entities or force then
+		local e = {}
+		for key,ent in pairs(self:getEntities()) do
+			if IsValid(ent) then
+				e[#e+1] = ent:EntIndex()
+			end
+		end
+		data[6] = e
+	end
+
+	self.dirty = {}
+
+	return data
+end
+
 function Spaceship:getOriginalPos()
 	return self.originalPos
 end
@@ -155,6 +221,7 @@ function Spaceship:setGridPos( pos )
 
 	assert( pos )
 	self.gridPos = pos
+	self.dirty.gridPos = true
 
 end
 
@@ -162,6 +229,7 @@ function Spaceship:setGalaxyPos( pos )
 
 	assert( pos )
 	self.galaxyPos = pos
+	self.dirty.galaxyPos = true
 
 end
 
@@ -170,12 +238,14 @@ function Spaceship:setPocketPos( pos )
 
 	assert( pos )
 	self.pocketPos = pos
+	self.dirty.pocketPos = true
 
 end
 
 function Spaceship:setPocketSize( size )
 
 	self.pocketSize = size
+	self.dirty.pocketSize = true
 
 end
 
@@ -199,14 +269,21 @@ function Spaceship:setOriginalPos( pos )
 	self.originalPos = pos
 end
 
-function Spaceship:isIn( pos )
+function Spaceship:isIn( pos, ofShip )
 
 	local p = pos - (self.bb_pos or self:getPocketPos())
 	local s = (self:getPocketSize() or self.bb_size) / 2
 
+	if ofShip then
+		p = pos - (self.bb_pos or self:getPocketPos())
+		s = (self.bb_size or self:getPocketSize()) / 2
+	else
+		p = pos - (self.bb_pos or self:getPocketPos())
+		s = (self:getPocketSize() or self.bb_size) / 2
+	end
+
 	return math.max( math.abs(p.x/s.x), math.abs(p.y/s.y), math.abs(p.z/s.z) ) <= 1
 end
-
 
 hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", function(e) 
 	e:SetNoDraw( false )
@@ -228,3 +305,19 @@ hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", fun
 
 end)
 
+if SERVER then
+	util.AddNetworkString("Grand_Espace - Delete Spaceship")
+end
+
+if CLIENT then
+	net.Receive("Grand_Espace - Delete Spaceship", function(len)
+		local spaceship = World.spaceships[net.ReadInt(32)]
+
+		if spaceship then
+			for k,v in pairs(spaceship:getEntities()) do
+				v.parentSpaceship = nil
+				v:SetNoDraw( false )
+			end
+		end
+	end)
+end

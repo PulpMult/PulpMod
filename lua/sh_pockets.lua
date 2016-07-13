@@ -2,13 +2,6 @@ AddCSLuaFile()
 
 if CLIENT then 
 
-
-	local function norme( v, size )
-
-		return math.max(math.abs(v.x/size.x), math.abs(v.y/size.y), math.abs(v.z/size.z))
-
-	end
-
 	local function fromGridToWorld( myShip, pos, ang )
 
 		local a,b = WorldToLocal( pos or Vector(), ang or Vector(), myShip:getGridPos(), myShip:getGridAngle() )
@@ -86,9 +79,9 @@ if CLIENT then
 	hook.Add("PostDrawTranslucentRenderables", "Grand_Espace - Draw pockets", function()
 
 		local ship = LocalPlayer():getSpaceship()
+
 		if ship then
 			
-
 				render.SetColorMaterial()
 
 				render.SetStencilEnable(true)
@@ -104,9 +97,7 @@ if CLIENT then
 				render.DrawBox(ship:getPocketPos(), Angle(), ship:getPocketSize()/2, -ship:getPocketSize()/2, Color(0,255,0,255*0), 1 )
 			
 				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
-				
-			
-				
+
 				render.SetMaterial(mat)
 				cam.Start3D( EyePos(), ship:getGridAngle() + EyeAngles() )
 					
