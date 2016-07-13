@@ -139,10 +139,10 @@ end
 
 function Spaceship:isIn( pos )
 
-	local p = pos - self.bb_pos
-	local s = self.bb_size / 2
+	local p = pos - (self:getPocketPos() or self.bb_pos)
+	local s = (self:getPocketSize() or self.bb_size) / 2
 
-	return math.max( p.x/s.x, p.y/s.y, p.z/s.z  ) <= 1
+	return math.max( math.abs(p.x/s.x), math.abs(p.y/s.y), math.abs(p.z/s.z)  ) <= 1
 
 end
 
