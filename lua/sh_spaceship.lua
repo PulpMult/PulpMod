@@ -13,6 +13,8 @@ function Spaceship.new()
 	self.galaxyPos = Vector()
 	self.gridPos   = Vector()
 	self.pocketPos  = Vector()
+	
+	self.originalPos = Vector()
 
 	self.bb_pos = Vector()
 	self.bb_size = Vector()
@@ -23,6 +25,40 @@ function Spaceship.new()
 
 	return self
 
+end
+
+--[[
+	SH: Will destroy the spaceship from a contraption without touching it.
+]]
+
+function Spaceship:delete()
+	if not self.id or self.id == 0 then return end
+	World.spaceships[ self.id ] = nil
+	
+	local relative = self.bb_pos
+	
+	for k, v in pairs( self.entities ) do
+		if IsValid( v ) then
+			v.parentSpaceship = nil
+			v:SetPos( self.originalPos + v:GetPos() - relative )
+		end
+	end
+	
+	local players = player.GetAll()
+	
+	for k, v in pairs( players ) do
+		if IsValid( v ) then
+			if v.parentSpaceship and v.parentSpaceship.id and v.parentSpaceship.id == self.id then
+				v:assignToSpaceship( nil )
+			end
+			
+			if self:isIn( v:GetPos() ) then
+				v:SetPos( self.originalPos + v:GetPos() - relative )
+			end
+		end
+	end
+	
+	self = nil
 end
 
 --[[
@@ -109,6 +145,10 @@ function Spaceship:getPocketSize()
 
 end
 
+function Spaceship:getOriginalPos()
+	return self.originalPos
+end
+
 function Spaceship:setGridPos( pos )
 
 	assert( pos )
@@ -137,13 +177,16 @@ function Spaceship:setPocketSize( size )
 
 end
 
+function Spaceship:setOriginalPos( pos )
+	self.originalPos = pos
+end
+
 function Spaceship:isIn( pos )
 
-	local p = pos - (self:getPocketPos() or self.bb_pos)
+	local p = pos - (self.bb_pos or self:getPocketPos())
 	local s = (self:getPocketSize() or self.bb_size) / 2
 
-	return math.max( math.abs(p.x/s.x), math.abs(p.y/s.y), math.abs(p.z/s.z)  ) <= 1
-
+	return math.max( math.abs(p.x/s.x), math.abs(p.y/s.y), math.abs(p.z/s.z) ) <= 1
 end
 
 
