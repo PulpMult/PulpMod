@@ -8,11 +8,10 @@ if CLIENT then
 	hook.Add("PostDrawOpaqueRenderables", "Grand_Espace - Draw pockets", function()
 
 		for id, ship in pairs(World.spaceships) do
-			
 			render.DrawWireframeBox(ship:getPocketPos(), Angle(), -ship:getPocketSize()/2, ship:getPocketSize()/2, Color(255,255,255,255), 0 )
-
+			--local p, s = ship:getAABB()
+			--render.DrawWireframeBox( p, Angle(), -s/2, s/2, Color(255,255,255,255), 0 )
 		end
-
 	end)
 
 else
@@ -24,7 +23,7 @@ else
 
 	local function isIn( bbpos, bbsize, pos )
 		local p = pos - bbpos
-		return math.max( p.x/bbsize.x*2, p.y/bbsize.y*2, p.z/bbsize.z*2  ) <= 1
+		return math.max( p.x/bbsize.x/2, p.y/bbsize.y/2, p.z/bbsize.z/2  ) <= 1
 	end
 
 	function pocket.moveShipToPocket( ship )
@@ -88,7 +87,6 @@ else
 
 		local pos, size = spaceship:getAABB()
 		local offset = 100
-		
 		size = size + Vector( offset, offset, offset )
 		
 		local found = false

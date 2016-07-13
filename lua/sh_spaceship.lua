@@ -43,10 +43,13 @@ function Spaceship:setEntities( e )
 	-- Calculate the bounding box limits
 	local minV = Vector()
 	local maxV = Vector()
-
-
-	if IsValid(e[1]) then
-		minV, maxV = e[1]:WorldSpaceAABB()
+	
+	-- PULP, the first element doesn't exist on the server, only on the client apparently.
+	for k, v in pairs( e ) do
+		if IsValid( v ) then
+			minV, maxV = v:WorldSpaceAABB()
+			break
+		end
 	end
 
 	for k,v in pairs(e) do
@@ -73,7 +76,6 @@ function Spaceship:setEntities( e )
 	self.bb_pos = Vector((minV+maxV)/2)
 	self.bb_size = Vector(maxV-minV)
 	self.entities = entities
-
 end
 
 function Spaceship:getAABB()
