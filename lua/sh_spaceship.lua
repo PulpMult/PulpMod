@@ -182,14 +182,21 @@ function Spaceship:setOriginalPos( pos )
 	self.originalPos = pos
 end
 
-function Spaceship:isIn( pos )
+function Spaceship:isIn( pos, ofShip )
 
 	local p = pos - (self.bb_pos or self:getPocketPos())
 	local s = (self:getPocketSize() or self.bb_size) / 2
 
+	if ofShip then
+		p = pos - (self.bb_pos or self:getPocketPos())
+		s = (self.bb_size or self:getPocketSize()) / 2
+	else
+		p = pos - (self.bb_pos or self:getPocketPos())
+		s = (self:getPocketSize() or self.bb_size) / 2
+	end
+
 	return math.max( math.abs(p.x/s.x), math.abs(p.y/s.y), math.abs(p.z/s.z) ) <= 1
 end
-
 
 hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", function(e) 
 	e:SetNoDraw( false )
