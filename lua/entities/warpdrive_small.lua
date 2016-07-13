@@ -7,22 +7,29 @@ ENT.Author = "Marmotte"
 
 ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 
---[[---------------------------------------------------------
-	Name: Initialize
------------------------------------------------------------]]
+local PHASE_IDLE = 1
+local PHASE_LOADING = 2
+local PHASE_MOVING = 3
+
 function ENT:Initialize()
 	if CLIENT then
 		self.lastClick = CurTime()
 		self.lastQuery = CurTime()
-		self.stars = nil
-		self.range = 2
+		self.stars = nil			-- closest, reachable stars
+		self.range = 2				-- jump range in parsec
 		self.starId = 1
 		self.window = { pixelPerUnit = 150, pos = Vector(0, 0, 0) }
-		self.starPos = Vector()
+		self.starPos = Vector()		-- position of the selected star
+		self.lastScanPos = Vector()	-- position of the ship during the last DB query
 		self.locationText = "[Unknown location]"
-		self.distanceText = "0 AU"
+		self.distanceText = "0 pc"
 		return
 	end
+
+	-- SHARED
+	self.loading = 10		-- seconds
+	self.speed = 0.1/66		-- parsec/tick
+	self.state = PHASE_IDLE
 
 	self:SetModel("models/props_combine/combine_intmonitor003.mdl")
 	self:SetMoveType(MOVETYPE_VPHYSICS)
@@ -37,17 +44,62 @@ function ENT:Initialize()
 	self:SetAngles(self:GetAngles() + Angle(-90, 0, 0))
 end
 
+function ENT:SetState(state)
+	self.state = state
+	if SERVER then
+		net.Start("PulpMod_WarpDrive")
+			net.WriteEntity(self)
+			net.WriteFloat(state)
+		net.Broadcast()
+	end
+end
+
 if SERVER then
-	util.AddNetworkString("PulpMod_WarpDrive_Jump")
-	net.Receive("PulpMod_WarpDrive_Jump", function(len, ply)
-			local ent = net.ReadEntity()
-			local pos = net.ReadVector()
+	util.AddNetworkString("PulpMod_WarpDrive")
+	net.Receive("PulpMod_WarpDrive", function(len, ply)
+		local ent = net.ReadEntity()
+		local state = net.ReadFloat()
 
-			if ent.parentSpaceship then
-				ent.parentSpaceship:setGalaxyPos(pos)
-			end
+		-- The entity tries to enter the loading phase (the player pressed JUMP!)
+		if state == PHASE_LOADING then
+			if ent.traveling then return end
+
+			ent.traveling = true
+
+			local pos = Vector()
+			pos.x = net.ReadFloat()
+			pos.y = net.ReadFloat()
+
+			ent:SetState(PHASE_LOADING)
+
+			-- First, load the warp drive...
+			timer.Simple(ent.loading, function()
+				if not IsValid(ent) then return end
+
+				ent:SetState(PHASE_MOVING)
+
+				-- ... then, move the ship
+				local timername = "warp_" .. ent:EntIndex()
+				timer.Create(timername, 0, 0, function()
+					if not IsValid(ent) then
+						timer.Destroy(timername)
+						return
+					end
+
+					local direction = pos - ent.parentSpaceship:getGalaxyPos()
+
+					if direction:Length() <= ent.speed then
+						ent.parentSpaceship:setGalaxyPos(pos)
+						timer.Destroy(timername)
+						ent.traveling = false
+						ent:SetState(PHASE_IDLE)
+					else
+						ent.parentSpaceship:setGalaxyPos(ent.parentSpaceship:getGalaxyPos() + direction:GetNormalized()*ent.speed)
+					end
+				end)
+			end)
+		end
 	end)
-
 	return
 end
 
@@ -69,6 +121,13 @@ surface.CreateFont("WarpDriveConsole", {
 	additive = false,
 	outline = false,
 })
+
+-- Retrieve the state of the warp drive from the server
+net.Receive("PulpMod_WarpDrive", function(len)
+	local ent = net.ReadEntity()
+	ent.state = net.ReadFloat()
+end)
+
 
 -- Taken from https://maurits.tv/data/garrysmod/wiki/wiki.garrysmod.com/indexedb0.html
 local function worldToScreen(vWorldPos,vPos,vScale,aRot)
@@ -194,11 +253,16 @@ function ENT:Draw()
 		-- Warp drive status text or distance
 		if not self.parentSpaceship then
 			draw.SimpleText("WARP DRIVE OFFLINE", "WarpDriveConsole", scrCenterX, scrCenterY, Color(204, 0, 0, math.abs(math.sin(CurTime()))*255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		elseif self.stars and #self.stars > 0 then
+		elseif self.starPos then
 			local coeff = self.window.pixelPerUnit/10/2
-			local line = Vector(self.stars[self.starId].x, self.stars[self.starId].y, 0) - self.parentSpaceship:getGalaxyPos()
+			local line = self.starPos - self.parentSpaceship:getGalaxyPos()
 			surface.SetDrawColor(red)
 			surface.DrawLine(scrCenterX, scrCenterY, scrCenterX + coeff*line.x/scrScale, scrCenterY + coeff*line.y/scrScale)
+
+			-- Is the drive loading ?
+			if self.state == PHASE_LOADING then
+				draw.SimpleText("WARP DRIVE LOADING", "WarpDriveConsole", scrCenterX, scrCenterY, Color(204, 0, 0, math.abs(math.sin(CurTime()))*255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			end
 		end
 
 		-- <Prev button
@@ -235,7 +299,7 @@ function ENT:Draw()
 		draw.SimpleText("JUMP!", "WarpDriveConsole", button3TextX, button3TextY, gray, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	cam.End3D2D()
 
-	-- Draw the location or jump drive bar
+	-- Draw the location and distance
 	local distance = 0
 	if self.parentSpaceship then
 		distance = self.starPos:Distance(self.parentSpaceship:getGalaxyPos())
@@ -245,17 +309,17 @@ function ENT:Draw()
 		surface.SetDrawColor(black2)
 		surface.DrawRect(0, 0, titleSizeX, titleSizeY)
 
-		self.distanceText = math.Round(distance, 2) .. " AU"
+		self.distanceText = math.Round(distance, 2) .. " pc"
 		draw.SimpleText(self.locationText, "WarpDriveConsole", titleCenterX, titleCenterY - 25, white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		draw.SimpleText(self.distanceText, "WarpDriveConsole", titleCenterX, titleCenterY + 25, white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	cam.End3D2D()
 
 	-- Check for button press
 	if click > 0 and self.parentSpaceship then
-		if not self.stars then 
+		if not self.stars or self.lastScanPos ~= self.parentSpaceship:getGalaxyPos() then 
 			self.stars = self:GetClosestStars(self.parentSpaceship:getGalaxyPos().x, self.parentSpaceship:getGalaxyPos().y, 50, self.range)
 		end
-		if #self.stars > 0 then
+		if self.stars and #self.stars > 0 then
 			if click == BUTTON_PREV then
 				self.starId = math.max(1, self.starId - 1)
 			elseif click == BUTTON_NEXT then
@@ -263,12 +327,11 @@ function ENT:Draw()
 			elseif click == BUTTON_JUMP then
 				local distance = self.starPos:Distance(self.parentSpaceship:getGalaxyPos())
 				if self.stars and #self.stars > 0 and distance <= self.range then
-					self.stars = nil
-					self.starId = 1
-
-					net.Start("PulpMod_WarpDrive_Jump")
+					net.Start("PulpMod_WarpDrive")
 						net.WriteEntity(self)
-						net.WriteVector(self.starPos)		-- TODO: Fix lost precision !
+						net.WriteFloat(PHASE_LOADING)
+						net.WriteFloat(self.starPos.x)		-- Do NOT use net.WriteVector (huge precision loss) - Marmotte
+						net.WriteFloat(self.starPos.y)
 					net.SendToServer()
 				end
 			end
@@ -293,6 +356,7 @@ function ENT:GetClosestStars(x, y, count, range)
 	if CurTime() - self.lastQuery > 0.5 then
 		result = sql.Query("SELECT * FROM " .. Grand_Espace_TABLE_NAME .. " WHERE ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))) <= " .. math.pow(range,2) .. " ORDER BY ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))) LIMIT " .. count .. ";")
 		self.lastQuery = CurTime()
+		self.lastScanPos = Vector(x, y, 0)
 	end
 	return result
 end
