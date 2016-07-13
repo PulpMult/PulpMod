@@ -5,7 +5,9 @@ if CLIENT then
 
 
 
-	local mat = Material("color")
+
+	local mat = Material("materials/stars2.png")
+
 	hook.Add("PostDrawOpaqueRenderables", "Grand_Espace - Draw pockets", function()
 
 		local ship = LocalPlayer():getSpaceship()
@@ -13,7 +15,7 @@ if CLIENT then
 			if v == ship then
 
 
-				render.SetMaterial(mat)
+				render.SetColorMaterial()
 
 
 				render.SetStencilEnable(true)
@@ -26,12 +28,15 @@ if CLIENT then
 				render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
 				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
 
-				render.DrawBox(ship:getPocketPos(), Angle(), ship:getPocketSize()/2, -ship:getPocketSize()/2, Color(0,0,0,255), 1 )
+				render.DrawBox(ship:getPocketPos(), Angle(), ship:getPocketSize()/2, -ship:getPocketSize()/2, Color(0,255,0,255*0), 1 )
 			
 				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
 				
-				render.DrawSphere( ship:getPocketPos(), 1000, 50, 50, Color(255,0,0,255))
-
+	
+				render.DepthRange( 0, 0 ) 
+				render.SetMaterial(mat)
+				render.DrawSphere( ship:getPocketPos(), -ship:getPocketSize():Length()/2*0-20000, 50, 50, Color(255,255,255,255), false)
+		
 				render.SetStencilReferenceValue(1)	-- Fix the holo bug with the physgun
 				render.ClearStencil()
 				render.SetStencilEnable(false)
