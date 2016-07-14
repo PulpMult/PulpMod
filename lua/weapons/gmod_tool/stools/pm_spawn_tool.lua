@@ -62,6 +62,10 @@ function TOOL:LeftClick(trace)
 	entity:SetPos(trace.HitPos - trace.HitNormal*entity:OBBMins().z)
 	entity:SetAngles(entity:GetAngles() + (trace.HitNormal:Angle() - Vector(0, 0, 1):Angle()))
 	
+	if entity.Setup then
+		entity:Setup(true)
+	end
+
 	local ply = self:GetOwner()
 
 	undo.Create("SpaceShip Component")

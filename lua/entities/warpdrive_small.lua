@@ -40,8 +40,12 @@ function ENT:Initialize()
 	if IsValid(phys) then
 		phys:Wake()
 	end
+end
 
-	self:SetAngles(self:GetAngles() + Angle(-90, 0, 0))
+function ENT:Setup(firstSpawn)
+	if firstSpawn then
+		self:SetAngles(self:GetAngles() + Angle(-90, 0, 0))
+	end
 end
 
 function ENT:SetState(state)
