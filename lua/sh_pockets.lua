@@ -25,7 +25,7 @@ if CLIENT then
 
 		for k,v in pairs(World.spaceships) do
 
-			if ship ~= v then
+			if ship ~= v and ship:getGalaxyPos() == v:getGalaxyPos() then
 			
 				for _,ent in pairs(v.entities) do
 
