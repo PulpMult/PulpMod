@@ -7,8 +7,8 @@ if SERVER then
 		local ship = World.spaceships[ tonumber( args[1] ) ]
 		if not ship then return end
 		
-		ply:SetPos( ship:getPocketPos() )
 		ply:assignToSpaceship( ship )
+		ply:SetPos( ship:getPocketPos() )
 	end	)
 	
 	concommand.Add( "returnfromship", function( ply, cmd, args )
