@@ -28,7 +28,7 @@ if CLIENT then
 
 			if thirdPerson then
 
-				gridPos = ship:getGridPos() - EyeAngles():Forward()*1000 
+				gridPos = ship:getGridPos() - EyeAngles():Forward()*1000 - (LocalPlayer():GetShootPos()-ship:getPocketPos())
 				gridAng = Angle()
 				--pocketPos = EyePos()
 				--pocketSize = Vector(100,100,100)
@@ -85,7 +85,7 @@ if CLIENT then
 				render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
 				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
 
-				render.DrawBox(ship:getPocketPos(), Angle(), ship:getPocketSize()/2, -ship:getPocketSize()/2, Color(0,255,0,255*0), 1 )
+				render.DrawBox(ship:getPocketPos(), Angle(), ship:getPocketSize(), -ship:getPocketSize(), Color(0,255,0,255*0), 1 )
 			
 				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
 
@@ -93,7 +93,7 @@ if CLIENT then
 				cam.Start3D( EyePos(), ship:getGridAngle() + EyeAngles() )
 					
 					render.DepthRange( 0, 0 ) 
-					render.DrawSphere( ship:getPocketPos(), -16384, 50, 50, Color(255,255,255,255), false)
+					render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
 					--render.DepthRange( 0, 1 ) 
 
 				cam.End3D()	
