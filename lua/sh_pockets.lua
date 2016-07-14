@@ -28,7 +28,7 @@ if CLIENT then
 
 			if thirdPerson then
 
-				gridPos = ship:getGridPos() - EyeAngles():Forward()*1000 - 
+				gridPos = ship:getGridPos() - EyeAngles():Forward()*1000 
 				gridAng = Angle()
 				--pocketPos = EyePos()
 				--pocketSize = Vector(100,100,100)
