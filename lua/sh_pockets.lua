@@ -17,6 +17,7 @@ if CLIENT then
 	hook.Add("PostDrawTranslucentRenderables", "Grand_Espace - Render other ships & pockets", function()
 
 		local ship = LocalPlayer():getSpaceship()
+
 		if ship then 
 
 			local gridPos = ship:getGridPos()
@@ -27,10 +28,11 @@ if CLIENT then
 
 			if thirdPerson then
 
-				gridPos = ship:getGridPos() - EyeAngles():Forward()*1000--*ship:getPocketSize():Length()*5
-				pocketPos = EyePos()
-				pocketSize = Vector(100,100,100)
-				shootPos = EyePos()
+				gridPos = ship:getGridPos() - EyeAngles():Forward()*1000 - 
+				gridAng = Angle()
+				--pocketPos = EyePos()
+				--pocketSize = Vector(100,100,100)
+				--shootPos = EyePos()
 
 			end
 
@@ -43,7 +45,7 @@ if CLIENT then
 						local pos_TT, ang_TT = WorldToLocal( ent:GetPos(), ent:GetAngles(), v:getPocketPos(), Angle() )
 						local pos_grid,  ang_grid  = LocalToWorld( pos_TT, ang_TT, v:getGridPos(), v:getGridAngle())
 						local targetPos, targetAngle = fromGridToWorld( gridPos, gridAng, pocketPos, pos_grid, ang_grid )
-						local boxPos, norm, fraction = util.IntersectRayWithOBB( targetPos, shootPos-targetPos, pocketPos, Angle(), -pocketSize, pocketSize)
+						local boxPos, norm, fraction = util.IntersectRayWithOBB( targetPos, shootPos-targetPos, pocketPos, Angle(), -pocketSize/2, pocketSize/2)
 
 						if boxPos then
 
@@ -69,7 +71,6 @@ if CLIENT then
 			end
 		end
 		
-
 		if ship then
 			
 				render.SetColorMaterial()
@@ -108,23 +109,28 @@ if CLIENT then
 			end
 
 		end
+
+		
 		
 
 	end)
 
 	local blacklist = { player=true, viewmodel=true, physgun_beam=true}
 
+
+
 	hook.Add("Grand_Espace - LocalPlayer changed ship", "Do not render outside the ship", function( ship, lastship )
 		
 		for k,v in pairs( ents.GetAll() ) do
+			
 			if IsValid(v) and not blacklist[v:GetClass()] then
 				
 				v:SetNoDraw(v.parentSpaceship ~= ship)
 
-				-- TODO save the alpha
-				if v.parentSpaceship == ship and thirdPerson then
+				if thirdPerson and v.parentSpaceship == ship and v.parentSpaceship ~= nil  then
 					v:SetNoDraw(true)
 				end
+
 				
 			end
 		end
