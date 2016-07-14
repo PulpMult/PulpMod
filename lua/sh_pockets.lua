@@ -36,7 +36,6 @@ if CLIENT then
 					local pos_TT, ang_TT = WorldToLocal( ent:GetPos(), ent:GetAngles(), v:getPocketPos(), Angle() )
 					local pos_grid,  ang_grid  = LocalToWorld( pos_TT, ang_TT, v:getGridPos(), v:getGridAngle())
 
-					print( pos_grid )
 					local targetPos, targetAngle = fromGridToWorld( ship, pos_grid, ang_grid )
 
 					local boxPos, norm, fraction = util.IntersectRayWithOBB( targetPos, shootPos-targetPos, pocketPos, Angle(), -pocketSize, pocketSize)
