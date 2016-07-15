@@ -80,7 +80,7 @@ if CLIENT then
 				return ship:getGridPos():Distance(a:getGridPos()) < ship:getGridPos():Distance(b:getGridPos())
 			end)
 
-			for k,v in pairs(World.spaceships) do
+			for k,v in pairs(spaceships) do
 				-- Position and orientation of the ship in the world
 				local shipWorldPos, shipWorldAng = fromGridToWorld(gridPos, gridAng, pocketPos, v:getGridPos(), v:getGridAngle())
 
