@@ -1,5 +1,8 @@
 AddCSLuaFile()
 
+-- TODO: Do not use a global variable !
+Grand_Espace_THIRDPERSON = true
+
 if CLIENT then 
 
 	local function fromGridToWorld( gridPos, gridAngle, pocketPos, pos, ang )
@@ -11,13 +14,53 @@ if CLIENT then
 
 	local mat = Material("materials/stars2.png")
 
-	local thirdPerson = true
+	-- TODO: Do not use a global variable !
+	local thirdPerson = Grand_Espace_THIRDPERSON
 	local sizeMicroPocket = Vector(100,100,100) -- The size of the box around the head of the player in 3rd person
 
 	local old = {}
 
 	hook.Add("PostDrawTranslucentRenderables", "Grand_Espace - Render other ships & pockets", function()
 		local ship = LocalPlayer():getSpaceship()
+
+		if ship then
+			
+			render.SetColorMaterial()
+
+			render.SetStencilEnable(true)
+			render.ClearStencil()
+			render.SetStencilWriteMask(5)
+			render.SetStencilTestMask(5)
+			render.SetStencilReferenceValue(5)
+			render.SetStencilFailOperation(STENCILOPERATION_KEEP)
+			render.SetStencilZFailOperation(STENCILOPERATION_KEEP)
+			render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
+			render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
+
+			render.DrawBox(ship:getPocketPos(), Angle(), ship:getPocketSize(), -ship:getPocketSize(), Color(0,255,0,255*0), 1 )
+		
+			render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
+
+			render.SetMaterial(mat)
+			cam.Start3D( EyePos(), ship:getGridAngle() + EyeAngles() )
+				
+				render.DepthRange( 0, 0 ) 
+				render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
+				render.DepthRange( 0, 1 ) 
+
+			cam.End3D()	
+		
+			render.SetStencilReferenceValue(1)	-- Fix the holo bug with the physgun
+			render.ClearStencil()
+			render.SetStencilEnable(false)
+
+		else
+
+			for _, v in pairs(World.spaceships) do
+				render.DrawWireframeBox(v:getPocketPos(), Angle(), -v:getPocketSize()/2, v:getPocketSize()/2, Color(255,255,255,255), 1 )
+			end
+
+		end
 
 		if ship then 
 			local gridPos = ship:getGridPos()
@@ -31,12 +74,18 @@ if CLIENT then
 				gridAng = Angle()
 			end
 
+			-- TODO: IMPORTANT! This has to be improved
+			local spaceships = table.Copy(World.spaceships)
+			table.sort(spaceships, function(a, b) 
+				return ship:getGridPos():Distance(a:getGridPos()) < ship:getGridPos():Distance(b:getGridPos())
+			end)
+
 			for k,v in pairs(World.spaceships) do
 				-- Position and orientation of the ship in the world
 				local shipWorldPos, shipWorldAng = fromGridToWorld(gridPos, gridAng, pocketPos, v:getGridPos(), v:getGridAngle())
 
 				-- Center of the ship projected on the virtual plane
-				local projCenter, norm, fraction = util.IntersectRayWithOBB(shipWorldPos, shootPos-shipWorldPos, pocketPos, Angle(), -pocketSize/2, pocketSize/2)
+				local projCenter, norm, fraction = util.IntersectRayWithOBB(shipWorldPos, shootPos-shipWorldPos, pocketPos, Angle(), -k*pocketSize/2, k*pocketSize/2)
 
 				if projCenter then
 					-- Scale factor of projection
@@ -69,49 +118,6 @@ if CLIENT then
 				end
 			end
 		end
-		
-		if ship then
-			
-			render.SetColorMaterial()
-
-			render.SetStencilEnable(true)
-			render.ClearStencil()
-			render.SetStencilWriteMask(5)
-			render.SetStencilTestMask(5)
-			render.SetStencilReferenceValue(5)
-			render.SetStencilFailOperation(STENCILOPERATION_KEEP)
-			render.SetStencilZFailOperation(STENCILOPERATION_KEEP)
-			render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
-			render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
-
-			render.DrawBox(ship:getPocketPos(), Angle(), ship:getPocketSize(), -ship:getPocketSize(), Color(0,255,0,255*0), 1 )
-		
-			render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
-
-			render.SetMaterial(mat)
-			cam.Start3D( EyePos(), ship:getGridAngle() + EyeAngles() )
-				
-				render.DepthRange( 0, 0 ) 
-				render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
-				--render.DepthRange( 0, 1 ) 
-
-			cam.End3D()	
-		
-			render.SetStencilReferenceValue(1)	-- Fix the holo bug with the physgun
-			render.ClearStencil()
-			render.SetStencilEnable(false)
-
-		else
-
-			for _, v in pairs(World.spaceships) do
-				render.DrawWireframeBox(v:getPocketPos(), Angle(), -v:getPocketSize()/2, v:getPocketSize()/2, Color(255,255,255,255), 1 )
-			end
-
-		end
-
-		
-		
-
 	end)
 
 	local blacklist = { player=true, viewmodel=true, physgun_beam=true}
