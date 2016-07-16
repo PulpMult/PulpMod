@@ -3,7 +3,6 @@ AddCSLuaFile()
 -- TODO: Do not use a global variable !
 GrandEspace_THIRDPERSON = false
 
-
 if CLIENT then 
 
 	local function fromGridToWorld( gridPos, gridAngle, pocketPos, pos, ang )
@@ -12,7 +11,6 @@ if CLIENT then
 		return LocalToWorld( a, b, pocketPos, Angle() )
 	end
 	
-
 	local mat = Material("materials/stars2.png")
 
 	-- TODO: Do not use a global variable !
