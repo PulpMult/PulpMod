@@ -30,7 +30,7 @@ function ENT:Initialize()
 	WireLib.CreateSpecialOutputs( self, { "Grid Positon", "Galaxy Position" }, { "VECTOR", "VECTOR" } )
 end
 
-local function fromGridToWorld( gridPos, gridAngle, pocketPos, pos, ang )
+local function fromWorldToGrid( gridPos, gridAngle, pocketPos, pos, ang )
 	local a,b = LocalToWorld( pos or Vector(), ang or Vector(), gridPos, gridAngle )
 	return WorldToLocal( a, b, pocketPos, Angle() )
 end
@@ -51,7 +51,7 @@ function ENT:Think()
 	
 	local a = Vector()
 	
-	local _, ang = fromGridToWorld( ship:getGridPos(), ship:getGridAngle(), ship:getPocketPos(), self:GetPos(), self:GetAngles() )
+	local _, ang = fromWorldToGrid( ship:getGridPos(), ship:getGridAngle(), ship:getPocketPos(), self:GetPos(), self:GetAngles() )
 	
 	if self:GetWireInput( "Forward" ) > 0 then
 		a = a + ang:Forward() * speed
