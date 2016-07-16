@@ -54,7 +54,7 @@ end
 
 function Spaceship:delete()
 	if not self.id or self.id == 0 then return end
-	World.spaceships[ self.id ] = nil
+	GrandEspace.World.spaceships[ self.id ] = nil
 	
 	local relative = self.bb_pos
 	
@@ -80,7 +80,7 @@ function Spaceship:delete()
 		end
 	end
 	
-	net.Start("Grand_Espace - Delete Spaceship")
+	net.Start("GrandEspace - Delete Spaceship")
 		net.WriteInt(self.id, 32)
 	net.Broadcast()
 
@@ -292,7 +292,7 @@ function Spaceship:isIn( pos, ofShip )
 	return math.max( math.abs(p.x/s.x), math.abs(p.y/s.y), math.abs(p.z/s.z) ) <= 1
 end
 
-hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", function(e) 
+hook.Add( "EntityRemoved", "GrandEspace - Remove removed props from ships", function(e) 
 	e:SetNoDraw( false )
 	
 	if e.parentSpaceship then
@@ -303,9 +303,9 @@ hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", fun
 		if table.Count( e.parentSpaceship.entities ) == 0 then
 			if not e.parentSpaceship.id or e.parentSpaceship.id == 0 then return end
 			print( "Removed spaceship: " .. e.parentSpaceship.id )
-			World.spaceships[ e.parentSpaceship.id ] = nil
+			GrandEspace.World.spaceships[ e.parentSpaceship.id ] = nil
 			
-			hook.Call("Grand_Espace - Spaceship removal", {}, e.parentSpaceship)
+			hook.Call("GrandEspace - Spaceship removal", {}, e.parentSpaceship)
 		end
 		
 	end
@@ -313,12 +313,12 @@ hook.Add( "EntityRemoved", "Grand_Espace - Remove removed props from ships", fun
 end)
 
 if SERVER then
-	util.AddNetworkString("Grand_Espace - Delete Spaceship")
+	util.AddNetworkString("GrandEspace - Delete Spaceship")
 end
 
 if CLIENT then
-	net.Receive("Grand_Espace - Delete Spaceship", function(len)
-		local spaceship = World.spaceships[net.ReadInt(32)]
+	net.Receive("GrandEspace - Delete Spaceship", function(len)
+		local spaceship = GrandEspace.World.spaceships[net.ReadInt(32)]
 
 		if spaceship then
 			for k,v in pairs(spaceship:getEntities()) do

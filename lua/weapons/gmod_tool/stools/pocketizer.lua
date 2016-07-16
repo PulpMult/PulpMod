@@ -28,7 +28,7 @@ function TOOL:LeftClick( trace )
 	GrandEspace.pocket.allocate( spaceship )
 	GrandEspace.pocket.moveShipToPocket( spaceship )
 
-	World.addSpaceship( spaceship )
+	GrandEspace.World.addSpaceship( spaceship )
 	
 	local ply = self:GetOwner()
 

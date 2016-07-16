@@ -2,13 +2,13 @@ if SERVER then
 
 	AddCSLuaFile()
 
-	util.AddNetworkString("Grand_Espace - Show map")
+	util.AddNetworkString("GrandEspace - Show map")
 
-	hook.Add("ShowSpare1", "Grand_Espace - Show map", function( ply )
+	hook.Add("ShowSpare1", "GrandEspace - Show map", function( ply )
 
 		if not IsValid(ply) then return end
 
-		net.Start("Grand_Espace - Show map")
+		net.Start("GrandEspace - Show map")
 		net.Send(ply)
 
 	end)
@@ -178,7 +178,7 @@ else
 		local a,b = self:LocalCursorPos()
 		local cursorPos = ( Vector(a,b) - Vector(w,h)/2) / pxPerUnit + windowPos
 
-		local result = sql.Query("SELECT * FROM " .. Grand_Espace_TABLE_NAME .. " WHERE ((X-(" .. cursorPos.x .."))*(X-(" .. cursorPos.x .."))+(Y-(" .. cursorPos.y .."))*(Y-(" .. cursorPos.y .."))) <= " .. math.pow(20/pxPerUnit,2) .. " ORDER BY ((X-(" .. cursorPos.x .."))*(X-(" .. cursorPos.x .."))+(Y-(" .. cursorPos.y .."))*(Y-(" .. cursorPos.y .."))) LIMIT 1")
+		local result = sql.Query("SELECT * FROM " .. GrandEspace.sqlStarTable .. " WHERE ((X-(" .. cursorPos.x .."))*(X-(" .. cursorPos.x .."))+(Y-(" .. cursorPos.y .."))*(Y-(" .. cursorPos.y .."))) <= " .. math.pow(20/pxPerUnit,2) .. " ORDER BY ((X-(" .. cursorPos.x .."))*(X-(" .. cursorPos.x .."))+(Y-(" .. cursorPos.y .."))*(Y-(" .. cursorPos.y .."))) LIMIT 1")
 		if result then
 
 			draw.NoTexture()
@@ -280,7 +280,7 @@ else
 		end
 	end
 
-	vgui.Register( "Grand_Espace - MapPanel", PANEL, "Panel" )
+	vgui.Register( "GrandEspace - MapPanel", PANEL, "Panel" )
 
 	local w,h = surface.ScreenWidth(), surface.ScreenHeight()
 
@@ -294,13 +294,13 @@ else
 		mapFrame:SetTitle( "MAP" )
 		mapFrame:MakePopup()
 
-		local mapPanel = mapFrame:Add("Grand_Espace - MapPanel")
+		local mapPanel = mapFrame:Add("GrandEspace - MapPanel")
 		mapPanel:SetPos(2,24)
 		mapPanel:SetSize(w*scale - 4, h*scale - 26)
 
 	end
 
-	net.Receive("Grand_Espace - Show map", function()
+	net.Receive("GrandEspace - Show map", function()
 
 		showMap()
 		

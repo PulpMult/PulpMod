@@ -16,8 +16,9 @@ end
 
 if CLIENT then
 
-	hook.Add("FinishMove", "Grand_Espace - Detection whether the player is in a ship", function(ply, mv)
+	hook.Add("FinishMove", "GrandEspace - Detection whether the player is in a ship", function(ply, mv)
 
+		local World = GrandEspace.World
 		if ply == LocalPlayer() then
 
 			local pos = mv:GetOrigin()
@@ -45,7 +46,7 @@ if CLIENT then
 					print("LocalPlayer exited the ship ["..tostring(lastShip).. " (" .. tostring(lastShip.id) .. ")" .."]")
 				end
 
-				hook.Call("Grand_Espace - LocalPlayer changed ship", {}, ply:getSpaceship(), lastShip)
+				hook.Call("GrandEspace - LocalPlayer changed ship", {}, ply:getSpaceship(), lastShip)
 				
 			end
 

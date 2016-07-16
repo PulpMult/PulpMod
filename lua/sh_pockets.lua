@@ -1,7 +1,7 @@
 AddCSLuaFile()
 
 -- TODO: Do not use a global variable !
-Grand_Espace_THIRDPERSON = true
+GrandEspace_THIRDPERSON = true
 
 if CLIENT then 
 
@@ -15,12 +15,15 @@ if CLIENT then
 	local mat = Material("materials/stars2.png")
 
 	-- TODO: Do not use a global variable !
-	local thirdPerson = Grand_Espace_THIRDPERSON
+	local thirdPerson = GrandEspace_THIRDPERSON
 	local sizeMicroPocket = Vector(100,100,100) -- The size of the box around the head of the player in 3rd person
 
 	local old = {}
 
-	hook.Add("PostDrawTranslucentRenderables", "Grand_Espace - Render other ships & pockets", function()
+	hook.Add("PostDrawTranslucentRenderables", "GrandEspace - Render other ships & pockets", function()
+
+		local World = GrandEspace.World
+
 		local ship = LocalPlayer():getSpaceship()
 
 		if ship then
@@ -124,7 +127,7 @@ if CLIENT then
 
 
 
-	hook.Add("Grand_Espace - LocalPlayer changed ship", "Do not render outside the ship", function( ship, lastship )
+	hook.Add("GrandEspace - LocalPlayer changed ship", "Do not render outside the ship", function( ship, lastship )
 		
 		for k,v in pairs( ents.GetAll() ) do
 			
@@ -187,7 +190,7 @@ else
 	end
 
 	local function collideWithOtherPockets( entryPos, size )
-		for k, v in pairs( World.spaceships ) do
+		for k, v in pairs( GrandEspace.World.spaceships ) do
 
 			local pocketPos = v:getPocketPos()
 			local pocketSize = v:getPocketSize()

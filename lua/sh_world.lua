@@ -1,6 +1,8 @@
 AddCSLuaFile()
 
-World = {}
+GrandEspace.World = {}
+local World = GrandEspace.World
+
 World.__index = World
 
 World.spaceships = {}
@@ -32,7 +34,7 @@ if CLIENT then
 		return Vector(tbl[1], tbl[2], tbl[3])
 	end
 
-	net.Receive("Grand_Espace - Synchronize the world", function( len )
+	net.Receive("GrandEspace - Synchronize the world", function( len )
 
 		local curtime = SysTime()
 		local t = net.ReadTable()
@@ -75,12 +77,12 @@ if CLIENT then
 
 	-- Request sync
 	hook.Add("InitPostEntity", "PulpMod_SyncSpaceships", function()
-		net.Start("Grand_Espace - Synchronize the world")
+		net.Start("GrandEspace - Synchronize the world")
 		net.SendToServer()
 	end)
 else -- SERVER
 
-	util.AddNetworkString("Grand_Espace - Synchronize the world")
+	util.AddNetworkString("GrandEspace - Synchronize the world")
 
 	local lastShipListing = CurTime()
 
@@ -97,16 +99,16 @@ else -- SERVER
 
 		end
 
-		net.Start("Grand_Espace - Synchronize the world")
+		net.Start("GrandEspace - Synchronize the world")
 			net.WriteTable(t)
 		net.Broadcast(players)
 	end
 
-	hook.Add("Tick", "Grand_Espace - Synchronize the world", function()
+	hook.Add("Tick", "GrandEspace - Synchronize the world", function()
 		syncSpaceships(player.GetAll(), false)
 	end)
 
-	net.Receive("Grand_Espace - Synchronize the world", function(len, ply)
+	net.Receive("GrandEspace - Synchronize the world", function(len, ply)
 		syncSpaceships(ply, true)
 	end)
 end

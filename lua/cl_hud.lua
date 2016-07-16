@@ -1,9 +1,11 @@
-hook.Add( "HUDPaint", "Grand_Espace - HUD while in space", function()
+hook.Add( "HUDPaint", "GrandEspace - HUD while in space", function()
 	local ply = LocalPlayer()
 	if not IsValid( ply ) then return end
 
+	local World = GrandEspace.World
+
 	-- TODO: Do not use a global variable ! SHOULDNT BE inside the loop ! (only for debugging purpose)
-	local thirdperson = Grand_Espace_THIRDPERSON
+	local thirdperson = GrandEspace_THIRDPERSON
 	
 	local ship = ply:getSpaceship()
 	if not ship then return end

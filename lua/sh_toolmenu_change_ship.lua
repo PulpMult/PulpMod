@@ -4,7 +4,7 @@ if SERVER then
 	concommand.Add( "changeship", function( ply, cmd, args )
 		if not args[1] then return end
 		
-		local ship = World.spaceships[ tonumber( args[1] ) ]
+		local ship = GrandEspace.World.spaceships[ tonumber( args[1] ) ]
 		if not ship then return end
 		
 		ply:assignToSpaceship( ship )
@@ -26,7 +26,7 @@ else
 		
 		scrollPanel:Clear()
 		
-		for k, v in pairs( World.spaceships ) do
+		for k, v in pairs( GrandEspace.World.spaceships ) do
 			local n = vgui.Create( "DButton", scrollPanel )
 			n:Dock( TOP )
 			n:SetText( "Ship " .. tostring( k ) )
@@ -64,7 +64,7 @@ else
 		returnFromShip.DoClick = function() RunConsoleCommand( "returnfromship" ) end
 	end
 	
-	hook.Add( "PopulateToolMenu", "Grand_Espace - Populate Tool Menu", function()
+	hook.Add( "PopulateToolMenu", "GrandEspace - Populate Tool Menu", function()
 		spawnmenu.AddToolMenuOption( "Utilities", "User", "grandespace_ships", "Go to spaceship", nil, nil, buildCPanel_Ships )
 	end )
 end

@@ -1,7 +1,8 @@
 AddCSLuaFile()
 
-Grand_Espace_TABLE_NAME = "GrandEspace_stars"
-local TABLE_NAME = Grand_Espace_TABLE_NAME
+GrandEspace.sqlStarTable = "GrandEspace_stars"
+
+local TABLE_NAME = GrandEspace.sqlStarTable
 
 if sql.TableExists(TABLE_NAME) then
 	print("The star table already exists.")
