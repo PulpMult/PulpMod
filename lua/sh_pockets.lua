@@ -1,117 +1,59 @@
 AddCSLuaFile()
 
+-- TODO: Do not use a global variable !
+Grand_Espace_THIRDPERSON = true
+
 if CLIENT then 
 
-	local function fromGridToWorld( myShip, pos, ang )
+	local function fromGridToWorld( gridPos, gridAngle, pocketPos, pos, ang )
 
-		local a,b = WorldToLocal( pos or Vector(), ang or Vector(), myShip:getGridPos(), myShip:getGridAngle() )
-		return LocalToWorld( a, b, myShip:getPocketPos(), Angle() )
+		local a,b = WorldToLocal( pos or Vector(), ang or Vector(), gridPos, gridAngle )
+		return LocalToWorld( a, b, pocketPos, Angle() )
 	end
 	
 
-
-
-	hook.Add("PostDrawTranslucentRenderables", "Grand_Espace - Render other ships", function()
-
-		local ship = LocalPlayer():getSpaceship()
-		if not ship then return end
-
-		local gridPos = ship:getGridPos()
-		local gridAng = ship:getGridAngle()
-
-		local pocketPos = ship:getPocketPos()
-		local pocketSize = ship:getPocketSize()
-		local shootPos = LocalPlayer():GetShootPos()
-
-		for k,v in pairs(World.spaceships) do
-
-			if ship ~= v and ship:getGalaxyPos() == v:getGalaxyPos() then
-			
-				for _,ent in pairs(v.entities) do
-
-
-					-- TT = TargetShip
-					-- S  = Our ship
-
-					local pos_TT, ang_TT = WorldToLocal( ent:GetPos(), ent:GetAngles(), v:getPocketPos(), Angle() )
-					local pos_grid,  ang_grid  = LocalToWorld( pos_TT, ang_TT, v:getGridPos(), v:getGridAngle())
-
-					local targetPos, targetAngle = fromGridToWorld( ship, pos_grid, ang_grid )
-
-					local boxPos, norm, fraction = util.IntersectRayWithOBB( targetPos, shootPos-targetPos, pocketPos, Angle(), -pocketSize, pocketSize)
-
-
-					if boxPos then
-
-						local scaleDist = boxPos:Distance(shootPos)/targetPos:Distance(shootPos)
-						
-
-						local p = ent:GetPos()
-						local a = ent:GetAngles()
-						local scale = ent:GetModelScale()
-
-	
-						ent:SetPos(boxPos)
-						ent:SetAngles(targetAngle)
-						ent:SetModelScale(scale * scaleDist)
-
-						ent:DrawModel()
-
-						ent:SetModelScale(scale)
-						ent:SetAngles(a)
-						ent:SetPos(p)
-
-					end
-
-
-				end
-
-			end
-
-		end
-
-	end)
-
-
 	local mat = Material("materials/stars2.png")
 
-	hook.Add("PostDrawTranslucentRenderables", "Grand_Espace - Draw pockets", function()
+	-- TODO: Do not use a global variable !
+	local thirdPerson = Grand_Espace_THIRDPERSON
+	local sizeMicroPocket = Vector(100,100,100) -- The size of the box around the head of the player in 3rd person
 
+	local old = {}
+
+	hook.Add("PostDrawTranslucentRenderables", "Grand_Espace - Render other ships & pockets", function()
 		local ship = LocalPlayer():getSpaceship()
 
 		if ship then
 			
-				render.SetColorMaterial()
+			render.SetColorMaterial()
 
-				render.SetStencilEnable(true)
-				render.ClearStencil()
-				render.SetStencilWriteMask(5)
-				render.SetStencilTestMask(5)
-				render.SetStencilReferenceValue(5)
-				render.SetStencilFailOperation(STENCILOPERATION_KEEP)
-				render.SetStencilZFailOperation(STENCILOPERATION_KEEP)
-				render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
-				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
+			render.SetStencilEnable(true)
+			render.ClearStencil()
+			render.SetStencilWriteMask(5)
+			render.SetStencilTestMask(5)
+			render.SetStencilReferenceValue(5)
+			render.SetStencilFailOperation(STENCILOPERATION_KEEP)
+			render.SetStencilZFailOperation(STENCILOPERATION_KEEP)
+			render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
+			render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
 
-				render.DrawBox(ship:getPocketPos(), Angle(), ship:getPocketSize()/2, -ship:getPocketSize()/2, Color(0,255,0,255*0), 1 )
-			
-				render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
+			render.DrawBox(ship:getPocketPos(), Angle(), ship:getPocketSize(), -ship:getPocketSize(), Color(0,255,0,255*0), 1 )
+		
+			render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
 
-				render.SetMaterial(mat)
-				cam.Start3D( EyePos(), ship:getGridAngle() + EyeAngles() )
-					
-					render.DepthRange( 0, 0 ) 
-					render.DrawSphere( ship:getPocketPos(), -16384, 50, 50, Color(255,255,255,255), false)
-					render.DepthRange( 0, 1 ) 
-
-				cam.End3D()	
+			render.SetMaterial(mat)
+			cam.Start3D( EyePos(), ship:getGridAngle() + EyeAngles() )
 				
+				render.DepthRange( 0, 0 ) 
+				render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
+				render.DepthRange( 0, 1 ) 
 
-				render.SetStencilReferenceValue(1)	-- Fix the holo bug with the physgun
-				render.ClearStencil()
-				render.SetStencilEnable(false)
+			cam.End3D()	
+		
+			render.SetStencilReferenceValue(1)	-- Fix the holo bug with the physgun
+			render.ClearStencil()
+			render.SetStencilEnable(false)
 
-			
 		else
 
 			for _, v in pairs(World.spaceships) do
@@ -120,15 +62,81 @@ if CLIENT then
 
 		end
 
+		if ship then 
+			local gridPos = ship:getGridPos()
+			local gridAng = ship:getGridAngle()
+			local pocketPos = ship:getPocketPos()
+			local pocketSize = ship:getPocketSize()
+			local shootPos = EyePos()
+
+			if thirdPerson then
+				gridPos = ship:getGridPos() - EyeAngles():Forward()*1000 - (LocalPlayer():GetShootPos()-ship:getPocketPos())
+				gridAng = Angle()
+			end
+
+			-- TODO: IMPORTANT! This has to be improved
+			local spaceships = table.Copy(World.spaceships)
+			table.sort(spaceships, function(a, b) 
+				return ship:getGridPos():Distance(a:getGridPos()) < ship:getGridPos():Distance(b:getGridPos())
+			end)
+
+			for k,v in pairs(spaceships) do
+				-- Position and orientation of the ship in the world
+				local shipWorldPos, shipWorldAng = fromGridToWorld(gridPos, gridAng, pocketPos, v:getGridPos(), v:getGridAngle())
+
+				-- Center of the ship projected on the virtual plane
+				local projCenter, norm, fraction = util.IntersectRayWithOBB(shipWorldPos, shootPos-shipWorldPos, pocketPos, Angle(), -k*pocketSize/2, k*pocketSize/2)
+
+				if projCenter then
+					-- Scale factor of projection
+					local scaleDist = projCenter:Distance(shootPos)/shipWorldPos:Distance(shootPos)
+
+					if ((not thirdPerson and ship ~= v) or thirdPerson) and  ship:getGalaxyPos() == v:getGalaxyPos() then
+						for _,ent in pairs(v.entities) do
+							-- Local coordinates of the prop (In the coordinates system of the ship)
+							local propPos, propAng = WorldToLocal(ent:GetPos(), ent:GetAngles(), v:getPocketPos(), Angle())
+							propPos = propPos*scaleDist
+
+							-- Coordinates of the prop after projection on the virtual plane
+							local projPropPos, projPropAng = LocalToWorld(propPos, propAng, projCenter, shipWorldAng)
+
+							local originalPos = ent:GetRenderOrigin()
+							local originalAng = ent:GetRenderAngles()
+							local originalScale = ent:GetModelScale()
+
+							ent:SetRenderOrigin(projPropPos)
+							ent:SetRenderAngles(projPropAng)
+							ent:SetModelScale(originalScale * scaleDist)
+
+							ent:DrawModel()
+
+							ent:SetRenderOrigin(originalPos)
+							ent:SetRenderAngles(originalAng)
+							ent:SetModelScale(originalScale)
+						end
+					end
+				end
+			end
+		end
 	end)
 
 	local blacklist = { player=true, viewmodel=true, physgun_beam=true}
 
+
+
 	hook.Add("Grand_Espace - LocalPlayer changed ship", "Do not render outside the ship", function( ship, lastship )
 		
 		for k,v in pairs( ents.GetAll() ) do
+			
 			if IsValid(v) and not blacklist[v:GetClass()] then
+				
 				v:SetNoDraw(v.parentSpaceship ~= ship)
+
+				if thirdPerson and v.parentSpaceship == ship and v.parentSpaceship ~= nil  then
+					v:SetNoDraw(true)
+				end
+
+				
 			end
 		end
 
