@@ -28,6 +28,8 @@ function Spaceship.new()
 
 	self.originalPos = Vector()
 
+	self.velocity = Vector()
+	
 	self.bb_pos = Vector()
 	self.bb_size = Vector()
 
@@ -276,6 +278,18 @@ function Spaceship:setOriginalPos( pos )
 	self.originalPos = pos
 end
 
+function Spaceship:getForward()
+	return self:getGridAngle():Forward()
+end
+
+function Spaceship:getRight()
+	return self:getGridAngle():Right()
+end
+
+function Spaceship:getUp()
+	return self:getGridAngle():Up()
+end
+
 function Spaceship:isIn( pos, ofShip )
 
 	local p = pos - (self.bb_pos or self:getPocketPos())
@@ -314,6 +328,15 @@ end)
 
 if SERVER then
 	util.AddNetworkString("GrandEspace - Delete Spaceship")
+	
+	hook.Add( "Think", "GrandEspace - Handling Spaceship's physics", function()
+		for k, v in pairs( GrandEspace.World.spaceships ) do
+			if v.velocity ~= Vector() then
+				v:setGridPos( v:getGridPos() + v.velocity )
+				v.velocity = LerpVector( 0.2, v.velocity, Vector() )
+			end
+		end
+	end )
 end
 
 if CLIENT then

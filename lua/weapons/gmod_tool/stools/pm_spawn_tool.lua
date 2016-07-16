@@ -7,6 +7,7 @@ TOOL.ClientConVar["selected"] = "prop_physics"
 AddCSLuaFile()
 
 local warpdrives = { warpdrive_small = "Warp Drive (small)" }
+local other = { pilot_interface = "Piloting Interface" }
 
 if CLIENT then
 	language.Add("tool.pm_spawn_tool.name", "Spawn tool")
@@ -45,6 +46,7 @@ if CLIENT then
 		
 		-- Append components
 		BuildSubNode(dtree, "Warp Drives", warpdrives, "materials/icon16/control_fastforward.png")
+		BuildSubNode(dtree, "Other", other, "materials/icon16/car.png")
 	end
 end
 
@@ -71,7 +73,8 @@ function TOOL:LeftClick(trace)
 	undo.Create("SpaceShip Component")
 		undo.AddEntity(entity)
 		undo.SetPlayer(ply)
-		undo.SetCustomUndoText("Undone " .. (warpdrives[selected]))
+		undo.SetCustomUndoText("Undone " .. (warpdrives[selected] or other[selected]))
+		cleanup.Add( ply, entity.PrintName, entity )
 	undo.Finish()
 
 	ply:AddCleanup("SpaceShip Component", entity)
