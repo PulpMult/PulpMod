@@ -8,8 +8,6 @@ ENT.Author = "Doctor Who"
 ENT.RenderGroup = RENDERGROUP_OPAQUE
 ENT.WireDebugName = ENT.PrintName
 
-cleanup.Register( ENT.PrintName )
-
 function ENT:Initialize()
 	assert( WireLib )
 
