@@ -1,7 +1,8 @@
 AddCSLuaFile()
 
 -- TODO: Do not use a global variable !
-GrandEspace_THIRDPERSON = true
+GrandEspace_THIRDPERSON = false
+
 
 if CLIENT then 
 
