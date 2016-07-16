@@ -2,6 +2,7 @@ AddCSLuaFile()
 
 GrandEspace = {}
 
+include("sh_math.lua")
 include("sh_world.lua")
 include("sh_player_functions.lua")
 include("sh_spaceship.lua")
