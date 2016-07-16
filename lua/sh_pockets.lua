@@ -248,6 +248,7 @@ else
 			spaceship:setPocketPos( entryPos )
 			spaceship:setPocketSize( size )
 			spaceship:setGridPos( Vector( math.random( -10000, 10000 ), math.random( -10000, 10000 ), math.random( -10000, 10000 ) ) )
+			spaceship:setGridAngle( Angle( math.random( 0, 360 ), math.random( 0, 360 ), math.random( 0, 360 ) ) )
 		end
 	end
 

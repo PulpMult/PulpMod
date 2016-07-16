@@ -30,33 +30,49 @@ function ENT:Initialize()
 	WireLib.CreateSpecialOutputs( self, { "Grid Positon", "Galaxy Position" }, { "VECTOR", "VECTOR" } )
 end
 
+local function fromGridToWorld( gridPos, gridAngle, pocketPos, pos, ang )
+	local a,b = LocalToWorld( pos or Vector(), ang or Vector(), gridPos, gridAngle )
+	return WorldToLocal( a, b, pocketPos, Angle() )
+end
+
+function ENT:GetWireInput( name )
+	if not self.Inputs then return 0 end
+	if not self.Inputs[ name ] then return 0 end
+	return self.Inputs[ name ].value or 0
+end
+
 function ENT:Think()
+	if CLIENT then return end
 	if not self.parentSpaceship then return end
 	if not self.Inputs then return end
 	
-	local speed = 100
+	local speed = 1000
+	local ship = self.parentSpaceship
 	
 	local a = Vector()
 	
-	if self.Inputs[ "Forward" ].value > 0 then
-		a = a + self.parentSpaceship:getForward() * speed
-	elseif self.Inputs[ "Backward" ].value > 0 then
-		a = a + self.parentSpaceship:getForward() * -speed
+	local _, ang = fromGridToWorld( ship:getGridPos(), ship:getGridAngle(), ship:getPocketPos(), self:GetPos(), self:GetAngles() )
+	
+	if self:GetWireInput( "Forward" ) > 0 then
+		a = a + ang:Forward() * speed
+		print( "FLYING" )
+	elseif self:GetWireInput( "Backward" ) > 0 then
+		a = a + ang:Forward() * -speed
 	end
 	
-	if self.Inputs[ "Left" ].value > 0 then
-		a = a + self.parentSpaceship:getRight() * -speed
-	elseif self.Inputs[ "Right" ].value > 0 then
-		a = a + self.parentSpaceship:getRight() * speed
+	if self:GetWireInput( "Left" ) > 0 then
+		a = a + ang:Right() * -speed
+	elseif self:GetWireInput( "Right" ) > 0 then
+		a = a + ang:Right() * speed
 	end
 	
-	if self.Inputs[ "Up" ].value > 0 then
-		a = a + self.parentSpaceship:getUp() * speed
-	elseif self.Inputs[ "Down" ].value > 0 then
-		a = a + self.parentSpaceship:getUp() * -speed
+	if self:GetWireInput( "Up" ) > 0 then
+		a = a + ang:Up() * speed
+	elseif self:GetWireInput( "Down" ) > 0 then
+		a = a + ang:Up() * -speed
 	end
 	
-	self.parentSpaceship.velocity = a
+	self.parentSpaceship.acceleration = a
 end
 
 function ENT:Setup(firstSpawn)
