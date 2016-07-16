@@ -35,9 +35,9 @@ function TOOL:LeftClick( trace )
 	undo.Create("Ship Pocketization")
 		undo.AddEntity( ply )
 		
-		undo.AddFunction( function( info, spaceship )
+		undo.AddFunction( function( info )
 			GrandEspace.pocket.moveShipFromPocket( spaceship )
-		end, spaceship)
+		end )
 		
 		undo.SetPlayer(ply)
 		undo.SetCustomUndoText("Undone ship pocketizing.")
