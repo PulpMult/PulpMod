@@ -19,8 +19,7 @@ if CLIENT then
 
 	local old = {}
 
-	hook.Add("PostDrawTranslucentRenderables", "GrandEspace - Render other ships & pockets", function()
-
+	hook.Add("PostDrawOpaqueRenderables", "GrandEspace - Render other ships & pockets", function()
 		local World = GrandEspace.World
 
 		local ship = LocalPlayer():getSpaceship()
