@@ -93,9 +93,9 @@ else
 		local pos1 = Vector2(w, h) / 2
 		local size1 = Vector2(w,h) / 2
 
-		local size2 = GALAXY_SIZE / nbRowImages * window.pixelPerUnit
+		local size2 = Vector2( 1, 1 ) * GALAXY_SIZE / nbRowImages * window.pixelPerUnit
 		
-		local posOriginToScreen = pos1 + Vector( size2, size2 ) - nbRowImages * size2 + ( Vector2() - window.pos ) * window.pixelPerUnit
+		local posOriginToScreen = pos1 + size2 - nbRowImages * size2 + ( Vector2() - window.pos ) * window.pixelPerUnit
 
 		for x=0, nbRowImages-1 do
 			for y=0, nbRowImages-1 do
