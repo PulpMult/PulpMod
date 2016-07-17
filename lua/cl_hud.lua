@@ -11,7 +11,7 @@ hook.Add( "HUDPaint", "GrandEspace - HUD while in space", function()
 	if not ship then return end
 	
 	for k, v in pairs( World.spaceships ) do
-		if ship ~= v then
+		if ship ~= v and ship:getGalaxyPos() == v:getGalaxyPos() then
 			local gridPos, pos, dist
 			
 			if thirdperson then
