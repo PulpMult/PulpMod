@@ -44,7 +44,7 @@ if CLIENT then
 			render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
 
 			render.SetMaterial(mat)
-			cam.Start3D( EyePos(), ship:getGridAngle() + EyeAngles() )
+			cam.Start3D( EyePos(), ship:getGridAngle() + (EyeAngles() - ship:getGridAngle()))
 				
 				render.DepthRange( 0, 0 ) 
 				render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)

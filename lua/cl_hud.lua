@@ -19,10 +19,11 @@ hook.Add( "HUDPaint", "GrandEspace - HUD while in space", function()
 				dist = v:getGridPos() - gridPos
 				pos = ( ship:getPocketPos() + dist ):ToScreen()
 			else
-				local gridPos2, gridAngle2 = WorldToLocal(LocalPlayer():EyePos(), LocalPlayer():EyeAngles(), ship:getPocketPos(), Angle())
-				gridPos = LocalToWorld(gridPos2, gridAngle2, ship:getGridPos(), ship:getGridAngle())
-				dist = v:getGridPos() - gridPos
-				pos = ( LocalPlayer():EyePos() + dist ):ToScreen()
+				--local gridPos2, gridAngle2 = WorldToLocal(EyePos(), EyeAngles(), ship:getPocketPos(), Angle())
+				--gridPos = LocalToWorld(gridPos2, gridAngle2, ship:getGridPos(), ship:getGridAngle())
+				--dist = v:getGridPos() - gridPos
+				local gridRelativePos = WorldToLocal(v:getGridPos(), v:getGridAngle(), ship:getGridPos(), ship:getGridAngle())
+				pos = (ship:getPocketPos() + gridRelativePos):ToScreen()
 			end
 
 			dist = v:getGridPos() - ship:getGridPos()
