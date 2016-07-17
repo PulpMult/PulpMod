@@ -52,7 +52,6 @@ end
 
 function Vector2( x, y )
 
-	print(x,y)
 	x = x or 0
 	y = y or 0	
 	if isnumber(x) and isnumber(y) then
