@@ -76,7 +76,10 @@ if CLIENT then
 			end
 
 			-- TODO: IMPORTANT! This has to be improved
-			local spaceships = table.Copy(World.spaceships)
+			local spaceships = {}
+			for k,v in pairs(World.spaceships) do
+				spaceships[k] = v
+			end
 			table.sort(spaceships, function(a, b) 
 				return ship:getGridPos():Distance(a:getGridPos()) < ship:getGridPos():Distance(b:getGridPos())
 			end)
@@ -86,7 +89,7 @@ if CLIENT then
 				local shipWorldPos, shipWorldAng = fromGridToWorld(gridPos, gridAng, pocketPos, v:getGridPos(), v:getGridAngle())
 
 				-- Center of the ship projected on the virtual plane
-				local projCenter, norm, fraction = util.IntersectRayWithOBB(shipWorldPos, shootPos-shipWorldPos, pocketPos, Angle(), -k*pocketSize/2, k*pocketSize/2)
+				local projCenter, norm, fraction = util.IntersectRayWithOBB(shipWorldPos, (shootPos-shipWorldPos)*1000, pocketPos, Angle(), -k*pocketSize/2, k*pocketSize/2)
 
 				if projCenter then
 					-- Scale factor of projection
