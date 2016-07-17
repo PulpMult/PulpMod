@@ -336,7 +336,7 @@ function ENT:Draw()
 					net.Start("PulpMod_WarpDrive")
 						net.WriteEntity(self)
 						net.WriteFloat(PHASE_LOADING)
-						net.WriteVector2(self.starPos.x)
+						net.WriteVector2(self.starPos)
 					net.SendToServer()
 				end
 			end

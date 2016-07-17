@@ -228,6 +228,7 @@ end
 function Spaceship:setGridPos( pos )
 
 	assert( pos )
+	print(pos)
 	self.gridPos = pos
 	self.dirty.gridPos = true
 
@@ -324,7 +325,9 @@ if SERVER then
 		for k, v in pairs( GrandEspace.World.spaceships ) do
 			v.velocity = v.velocity + v.acceleration * fTime
 			v.velocity = Vector( math.Clamp( v.velocity.x, -maxSpeed, maxSpeed ), math.Clamp( v.velocity.y, -maxSpeed, maxSpeed ), math.Clamp( v.velocity.z, -maxSpeed, maxSpeed ) )
-			v:setGridPos( v:getGridPos() + v.velocity * fTime )
+			if not v.velocity:IsZero() then
+				v:setGridPos( v:getGridPos() + v.velocity * fTime )
+			end
 		end
 	end )
 end
