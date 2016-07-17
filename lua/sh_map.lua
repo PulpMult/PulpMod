@@ -100,7 +100,7 @@ else
 		for x=0, nbRowImages-1 do
 			for y=0, nbRowImages-1 do
 
-				local pos2 = posOriginToScreen + Vector2(x,y) * size2 * 2
+				local pos2 = posOriginToScreen + Vector2(x,y) * size2.x * 2
 				if isRectInRect( pos1, size1, pos2, size2 ) then
 
 					surface.SetMaterial( material_map[zoom][x+1][y+1] )
