@@ -23,6 +23,10 @@ if CLIENT then
 
 			local pos = mv:GetOrigin()
 
+			if pos:IsZero() then
+				pos = ply:GetPos()
+			end
+
 			local lastShip = ply:getSpaceship()
 			local currentShip = nil
 			
