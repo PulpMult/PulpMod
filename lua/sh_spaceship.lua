@@ -83,6 +83,9 @@ function Spaceship:delete()
 		end
 	end
 	
+	print( "Removed spaceship: " .. self.id )
+	hook.Call("GrandEspace - Spaceship removal", {}, self )
+	
 	net.Start("GrandEspace - Delete Spaceship")
 		net.WriteInt(self.id, 32)
 	net.Broadcast()
@@ -328,13 +331,16 @@ end
 
 if CLIENT then
 	net.Receive("GrandEspace - Delete Spaceship", function(len)
-		local spaceship = GrandEspace.World.spaceships[net.ReadInt(32)]
+		local id = net.ReadInt( 32 )
+		local spaceship = GrandEspace.World.spaceships[ id ]
 
 		if spaceship then
 			for k,v in pairs(spaceship:getEntities()) do
 				v.parentSpaceship = nil
 				v:SetNoDraw( false )
 			end
+			
+			GrandEspace.World.spaceships[ id ] = nil
 		end
 	end)
 end
