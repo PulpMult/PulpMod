@@ -21,7 +21,7 @@ function Spaceship.new()
 
 	self = setmetatable( {}, Spaceship)
 
-	self.galaxyPos = Vector()
+	self.galaxyPos = Vector2()
 	self.gridPos   = Vector()
 	self.pocketPos  = Vector()
 	self.gridAngle = Angle()
@@ -156,10 +156,6 @@ end
 
 function Spaceship:getGalaxyPos( )
 
-	if SERVER then
-		return self.galaxyPos 
-	end
-
 	return self.galaxyPos
 
 end
@@ -183,7 +179,7 @@ function Spaceship:getUpdateTable(force)
 
 	-- Synchronize galaxy pos
 	if self.dirty.galaxyPos or force then
-		data[2] = vecToTbl(self:getGalaxyPos())
+		data[2] = self:getGalaxyPos()
 	end
 
 	-- Synchronize grid pos

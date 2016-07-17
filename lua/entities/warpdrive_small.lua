@@ -19,8 +19,8 @@ function ENT:Initialize()
 		self.range = 2				-- jump range in parsec
 		self.starId = 1
 		self.window = { pixelPerUnit = 150, pos = Vector(0, 0, 0) }
-		self.starPos = Vector()		-- position of the selected star
-		self.lastScanPos = Vector()	-- position of the ship during the last DB query
+		self.starPos = Vector2()		-- position of the selected star
+		self.lastScanPos = Vector2()	-- position of the ship during the last DB query
 		self.locationText = "[Unknown location]"
 		self.distanceText = "0 pc"
 		return
@@ -70,9 +70,7 @@ if SERVER then
 
 			ent.traveling = true
 
-			local pos = Vector()
-			pos.x = net.ReadFloat()
-			pos.y = net.ReadFloat()
+			local pos = net.ReadVector2()
 
 			ent:SetState(PHASE_LOADING)
 
@@ -338,8 +336,7 @@ function ENT:Draw()
 					net.Start("PulpMod_WarpDrive")
 						net.WriteEntity(self)
 						net.WriteFloat(PHASE_LOADING)
-						net.WriteFloat(self.starPos.x)		-- Do NOT use net.WriteVector (huge precision loss) - Marmotte
-						net.WriteFloat(self.starPos.y)
+						net.WriteVector2(self.starPos.x)
 					net.SendToServer()
 				end
 			end
@@ -364,7 +361,7 @@ function ENT:GetClosestStars(x, y, count, range)
 	if CurTime() - self.lastQuery > 0.5 then
 		result = sql.Query("SELECT * FROM " .. GrandEspace.sqlStarTable .. " WHERE ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))) <= " .. math.pow(range,2) .. " ORDER BY ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))) LIMIT " .. count .. ";")
 		self.lastQuery = CurTime()
-		self.lastScanPos = Vector(x, y, 0)
+		self.lastScanPos = Vector2(x, y)
 	end
 	return result
 end
