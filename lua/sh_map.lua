@@ -90,17 +90,17 @@ else
 
 		local nbRowImages = math.pow(2, zoom-1)
 
-		local pos1 = Vector(w, h) / 2
-		local size1 = Vector(w,h) / 2
+		local pos1 = Vector2(w, h) / 2
+		local size1 = Vector2(w,h) / 2
 
-		local size2 = Vector(1,1) * GALAXY_SIZE / nbRowImages * window.pixelPerUnit
-		local posOriginToScreen = pos1 + size2 - nbRowImages*size2 + (Vector()-window.pos)*window.pixelPerUnit
-
+		local size2 = GALAXY_SIZE / nbRowImages * window.pixelPerUnit
+		
+		local posOriginToScreen = pos1 + Vector( size2, size2 ) - nbRowImages * size2 + ( Vector2() - window.pos ) * window.pixelPerUnit
 
 		for x=0, nbRowImages-1 do
 			for y=0, nbRowImages-1 do
 
-				local pos2 = posOriginToScreen + Vector(x,y) * size2 * 2
+				local pos2 = posOriginToScreen + Vector2(x,y) * size2 * 2
 				if isRectInRect( pos1, size1, pos2, size2 ) then
 
 					surface.SetMaterial( material_map[zoom][x+1][y+1] )
@@ -145,11 +145,11 @@ else
 
 		self.grabbed = false
 		self.grabPosX, self.grabPosY = 0,0
-		self.grabInitPos = Vector()
+		self.grabInitPos = Vector2()
 
 		self.window = { 
 			pixelPerUnit = 80*0+200, -- Px*GalaxyUnit⁻¹
-			pos = Vector() 
+			pos = Vector2() 
 		}
 
 		self.gridSpace = 1 -- In GalaxyUnit
@@ -176,15 +176,15 @@ else
 		drawGrid( w, h, self.window, self.gridSpace, Color(100,100,100))
 
 		local a,b = self:LocalCursorPos()
-		local cursorPos = ( Vector(a,b) - Vector(w,h)/2) / pxPerUnit + windowPos
+		local cursorPos = ( Vector2(a,b) - Vector2(w,h)/2) / pxPerUnit + windowPos
 
 		local result = sql.Query("SELECT * FROM " .. GrandEspace.sqlStarTable .. " WHERE ((X-(" .. cursorPos.x .."))*(X-(" .. cursorPos.x .."))+(Y-(" .. cursorPos.y .."))*(Y-(" .. cursorPos.y .."))) <= " .. math.pow(20/pxPerUnit,2) .. " ORDER BY ((X-(" .. cursorPos.x .."))*(X-(" .. cursorPos.x .."))+(Y-(" .. cursorPos.y .."))*(Y-(" .. cursorPos.y .."))) LIMIT 1")
 		if result then
 
 			draw.NoTexture()
 
-			local posStar = Vector(result[1].x, result[1].y)
-			local posStarScreen = Vector(w,h)/2 + (posStar - windowPos) * pxPerUnit
+			local posStar = Vector2(result[1].x, result[1].y)
+			local posStarScreen = Vector2(w,h)/2 + (posStar - windowPos) * pxPerUnit
 
 			local str = tostring(result[1].id) 
 			local textw,texth = surface.GetTextSize( str ) 
@@ -268,7 +268,7 @@ else
 		local x = self.grabPosX - posX
 		local y = self.grabPosY - posY
 
-		self.window.pos = self.grabInitPos + Vector(x,y) / self.window.pixelPerUnit
+		self.window.pos = self.grabInitPos + Vector2(x,y) / self.window.pixelPerUnit
 
 	end
 
