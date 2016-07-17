@@ -21,7 +21,7 @@ function Spaceship.new()
 
 	self = setmetatable( {}, Spaceship)
 
-	self.galaxyPos = Vector2()
+	self.galaxyPos = Vector2(0, 5e-6)
 	self.gridPos   = Vector()
 	self.pocketPos  = Vector()
 	self.gridAngle = Angle()

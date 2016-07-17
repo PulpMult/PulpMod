@@ -23,7 +23,6 @@ function TOOL:LeftClick( trace )
 	local spaceship = Spaceship.new()
 	spaceship:setEntities( e )
 	spaceship:setGridPos( Vector() )
-	spaceship:setGalaxyPos( Vector2() )
 
 	GrandEspace.pocket.allocate( spaceship )
 	GrandEspace.pocket.moveShipToPocket( spaceship )
