@@ -33,8 +33,6 @@ function TOOL:LeftClick( trace )
 	local ply = self:GetOwner()
 
 	undo.Create("Ship Pocketization")
-		undo.AddEntity( ply )
-		
 		undo.AddFunction( function( info )
 			GrandEspace.pocket.moveShipFromPocket( spaceship )
 		end )
