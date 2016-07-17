@@ -49,6 +49,8 @@ function ENT:Think()
 	local speed = 1000
 	local ship = self.parentSpaceship
 	
+	if not ship then return end
+	
 	local a = Vector()
 	
 	local _, ang = fromWorldToGrid( ship:getGridPos(), ship:getGridAngle(), ship:getPocketPos(), self:GetPos(), self:GetAngles() )
