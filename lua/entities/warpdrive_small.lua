@@ -343,7 +343,8 @@ function ENT:Draw()
 			if self.stars and #self.stars > 0 then
 				self.starPos.x = self.stars[self.starId].x
 				self.starPos.y = self.stars[self.starId].y
-				self.locationText = "[Star " .. self.stars[self.starId].id .. "]"
+				--self.locationText = "[Star " .. self.stars[self.starId].id .. "]"
+				self.locationText = "[" .. GrandEspace.getStarName(self.stars[self.starId].id) .. " System]"
 			end
 		end
 	end
