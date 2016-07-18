@@ -86,8 +86,18 @@ function ENT:Think()
 	
 	self.parentSpaceship:setAcceleration(a, true)	-- true to force synchronization with the clients
 	
-	self:SyncWithClient()
-	self:SyncWithServer()
+	if not self.Inputs then return end
+	if not self.Inputs[ "Seat" ] then return end
+	if not self.Inputs[ "Seat" ].value then return end
+	
+	if SERVER then
+		if not self.seat or self.seat ~= self.Inputs[ "Seat" ].value then
+			self.seat = self.Inputs[ "Seat" ].value
+			self:SendToClients()
+		end
+	end
+	
+	self:SendToServer()
 end
 
 function ENT:Draw()
@@ -102,20 +112,16 @@ function ENT:TriggerInput( iname, value )
 	self.Inputs[ iname ].value = value
 end
 
-function ENT:SyncWithServer()
+function ENT:SendToClients()
 	if CLIENT then return end
-	
-	if not self.Inputs then return end
-	if not self.Inputs[ "Seat" ] then return end
-	if not self.Inputs[ "Seat" ].value then return end
 	
 	net.Start( "PulpMod_PilotInterface_SERVER" )
 		net.WriteEntity( self )
-		net.WriteEntity( self.Inputs[ "Seat" ].value )
+		net.WriteEntity( self.seat )
 	net.Broadcast()
 end
 
-function ENT:SyncWithClient()
+function ENT:SendToServer()
 	if SERVER then return end
 	net.Start( "PulpMod_PilotInterface_CLIENT" )
 		net.WriteEntity( self )
