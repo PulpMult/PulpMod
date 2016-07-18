@@ -3,7 +3,7 @@ AddCSLuaFile()
 VECTOR2 = {}
 VECTOR2.__index = VECTOR2
 
---debug.getregistry().Vector2 = VECTOR2
+debug.getregistry().Vector2 = VECTOR2
 
 function isvector2( v )
 	return v and istable(v) and getmetatable(v) == VECTOR2
