@@ -52,7 +52,6 @@ function ENT:Think()
 		if ( not IsValid( self.seat ) ) or ( not self.seat:IsVehicle() ) then return end
 		if ply:GetVehicle() ~= self.seat then return end
 		ply:setThirdPerson( self.seat:GetThirdPersonMode() )
-		print( "TEST" )
 	return end
 	
 	if not self.parentSpaceship then return end
