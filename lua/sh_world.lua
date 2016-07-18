@@ -52,49 +52,53 @@ if CLIENT then
 	net.Receive("GrandEspace - Synchronize the world", function( len )
 
 		World.spaceTime = net.ReadDouble()
-		local t = net.ReadTable()
-		local curtime = SysTime()
-		
-		for _,v in pairs(t) do
 
-			-- Convert table back to vectors
-			for k,vec in pairs(v) do
-				if type(vec) == "table" and #vec == 3 and type(vec[1]) == "number" and type(vec[2]) == "number" and type(vec[3]) == "number" then
-					v[k] = tblToVec(vec)
-				end
-			end
-
-			if not World.spaceships[v.id] then
-				World.spaceships[v.id] = Spaceship.new()
-			end
-
-			local s = World.spaceships[v.id]
+		if len > 64 then	-- if the table was sent by the server
+			local t = net.ReadTable()
+			local curtime = SysTime()
 			
-			if v.galaxyPos then
-				--s:setVelocity((v.galaxyPos-s:getGalaxyPos()) / (curtime-(s.lastUpdate or 0))*1e6)
-				s:setGalaxyPos( v.galaxyPos )
-			end
+			for _,v in pairs(t) do
 
-			if v.gridPos then s:setGridPos( v.gridPos ) end
-			if v.pocketPos then s:setPocketPos( v.pocketPos ) end
-			if v.pocketSize then s:setPocketSize( v.pocketSize ) end
-			if v.gridAngle then s:setGridAngle( v.gridAngle ) end
-			if v.acceleration then s:setAcceleration(v.acceleration) end
-			if v.velocity then s:setVelocity(v.velocity) end
-
-			s.lastUpdate = curtime
-
-			s.id = v.id
-
-			if v.entities then
-				local entities = {}
-				for _,ent in pairs(v.entities) do
-					entities[#entities+1] = ent
+				-- Convert table back to vectors
+				for k,vec in pairs(v) do
+					if type(vec) == "table" and #vec == 3 and type(vec[1]) == "number" and type(vec[2]) == "number" and type(vec[3]) == "number" then
+						v[k] = tblToVec(vec)
+					end
 				end
 
-				s:setEntities( entities ) -- Will recalculate the bounding box each time O(n)
-			end
+				if not World.spaceships[v.id] then
+					World.spaceships[v.id] = Spaceship.new()
+				end
 
+				local s = World.spaceships[v.id]
+				
+				if v.galaxyPos then
+					--s:setVelocity((v.galaxyPos-s:getGalaxyPos()) / (curtime-(s.lastUpdate or 0))*1e6)
+					s:setGalaxyPos( v.galaxyPos )
+				end
+
+				if v.gridPos then s:setGridPos( v.gridPos ) end
+				if v.pocketPos then s:setPocketPos( v.pocketPos ) end
+				if v.pocketSize then s:setPocketSize( v.pocketSize ) end
+				if v.gridAngle then s:setGridAngle( v.gridAngle ) end
+				if v.acceleration then s:setAcceleration(v.acceleration) end
+				if v.velocity then s:setVelocity(v.velocity) end
+
+				s.lastUpdate = curtime
+
+				s.id = v.id
+
+				if v.entities then
+					local entities = {}
+					for _,ent in pairs(v.entities) do
+						print(ent)
+						entities[#entities+1] = ent
+					end
+
+					s:setEntities( entities ) -- Will recalculate the bounding box each time O(n)
+				end
+
+			end
 		end
 
 		simulatePhysics()
@@ -102,6 +106,7 @@ if CLIENT then
 
 	-- Request sync
 	hook.Add("InitPostEntity", "PulpMod_SyncSpaceships", function()
+		print("request")
 		net.Start("GrandEspace - Synchronize the world")
 		net.SendToServer()
 	end)
@@ -124,7 +129,10 @@ else -- SERVER
 
 		net.Start("GrandEspace - Synchronize the world")
 			net.WriteDouble(World.spaceTime)
-			net.WriteTable(t)
+
+			if next(t) then		-- if table is not empty
+				net.WriteTable(t)
+			end
 		net.Broadcast(players)
 	end
 
@@ -135,6 +143,7 @@ else -- SERVER
 	end)
 
 	net.Receive("GrandEspace - Synchronize the world", function(len, ply)
+		print("request")
 		syncSpaceships(ply, true)
 	end)
 end

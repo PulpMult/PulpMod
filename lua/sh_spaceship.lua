@@ -38,7 +38,10 @@ function Spaceship.new()
 
 	self.lastSimulation = SysTime()
 	self.toSync = {}
-	self.recentlySynced = { velocity = true }
+	self.syncOnForce = { 
+		"galaxyPos", "gridPos", "gridAng", "velocity", 
+		"acceleration", "pocketPos", "pocketSize",
+		"entities" }
 
 	self.id = 0
 
@@ -90,7 +93,6 @@ end
 
 function Spaceship:sync(varname)
 	self.toSync[varname] = self[varname]
-	self.recentlySynced[varname] = true
 end
 
 --[[
@@ -192,11 +194,11 @@ function Spaceship:getUpdateTable(force)
 		local t = { id = self.id }
 
 		-- Convert vectors to table
-		for k,_ in pairs(self.recentlySynced) do
-			if type(self[k]) == "Vector" then
-				t[k] = vecToTbl(self[k])
+		for _,v in pairs(self.syncOnForce) do
+			if type(self[v]) == "Vector" then
+				t[v] = vecToTbl(self[v])
 			else
-				t[k] = self[k]
+				t[v] = self[v]
 			end
 		end
 
@@ -331,7 +333,7 @@ end
 hook.Add( "EntityRemoved", "GrandEspace - Remove removed props from ships", function(e) 
 	e:SetNoDraw( false )
 	
-	if e.parentSpaceship then
+	if e.parentSpaceship and not e:IsPlayer() then
 		
 		print("Removed " .. tostring(e) .. " from spaceship " .. tostring(e.parentSpaceship.id) )
 		table.RemoveByValue( e.parentSpaceship.entities, e )
