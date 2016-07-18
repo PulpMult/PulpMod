@@ -52,6 +52,7 @@ function ENT:Think()
 		if ( not IsValid( self.seat ) ) or ( not self.seat:IsVehicle() ) then return end
 		if ply:GetVehicle() ~= self.seat then return end
 		ply:setThirdPerson( self.seat:GetThirdPersonMode() )
+		print( "TEST" )
 	return end
 	
 	if not self.parentSpaceship then return end
@@ -110,6 +111,7 @@ function ENT:SyncWithServer()
 	if not self.Inputs[ "Seat" ].value then return end
 	
 	net.Start( "PulpMod_PilotInterface_SERVER" )
+		net.WriteEntity( self )
 		net.WriteEntity( self.Inputs[ "Seat" ].value )
 	net.Broadcast()
 end
@@ -117,7 +119,7 @@ end
 function ENT:SyncWithClient()
 	if SERVER then return end
 	net.Start( "PulpMod_PilotInterface_CLIENT" )
-		
+		net.WriteEntity( self )
 	net.SendToServer()
 end
 
@@ -125,12 +127,13 @@ if SERVER then
 	util.AddNetworkString( "PulpMod_PilotInterface_SERVER" )
 	
 	net.Receive( "PulpMod_PilotInterface_CLIENT", function( len, ply )
-		
+		local self = net.ReadEntity()
 	end	)
 end
 
 if CLIENT then
 	net.Receive( "PulpMod_PilotInterface_SERVER", function( len )
+		local self = net.ReadEntity()
 		self.seat = net.ReadEntity()
 	end )
 end
