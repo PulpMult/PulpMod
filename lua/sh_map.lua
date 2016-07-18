@@ -96,7 +96,7 @@ else
 		local pos1 = Vector2(w, h) / 2
 		local size1 = Vector2(w,h) / 2
 
-		local size2 = Vector2( 1, 1 ) * GALAXY_SIZE / nbRowImages * window.pixelPerUnit
+		local size2 = Vector2( 1, 1 ) * math.floor(GALAXY_SIZE / nbRowImages * window.pixelPerUnit)
 		
 		local posOriginToScreen = pos1 + size2 - nbRowImages * size2 + ( Vector2() - window.pos ) * window.pixelPerUnit
 
@@ -188,7 +188,6 @@ else
 			local s = 0.1*pxPerUnit
 
 			surface.DrawOutlinedRect( pos.x-s/2, pos.y-s/2, s, s)
-			print("up")
 		end
 		
 
