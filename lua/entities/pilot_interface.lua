@@ -26,6 +26,8 @@ function ENT:Initialize()
 		phys:Wake()
 	end
 	
+	self.keyInput = { up = false, down = false, left = false, right = false, forward = false, backward = false }
+	
 	WireLib.CreateSpecialInputs( self, { "Forward", "Backward", "Left", "Right", "Up", "Down", "Seat" }, { "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "ENTITY" } )
 	WireLib.CreateSpecialOutputs( self, { "Grid Positon", "Galaxy Position" }, { "VECTOR", "VECTOR" } )
 end
@@ -52,6 +54,19 @@ function ENT:Think()
 		if ( not IsValid( self.seat ) ) or ( not self.seat:IsVehicle() ) then return end
 		if ply:GetVehicle() ~= self.seat then return end
 		ply:setThirdPerson( self.seat:GetThirdPersonMode() )
+		
+		if not self.keyInput then self.keyInput = {} end
+		
+		self.keyInput[ "up" ] = input.IsButtonDown( KEY_SPACE )
+		self.keyInput[ "down" ] = input.IsButtonDown( KEY_LSHIFT )
+		
+		self.keyInput[ "forward" ] = input.IsButtonDown( KEY_W )
+		self.keyInput[ "backward" ] = input.IsButtonDown( KEY_S )
+		
+		self.keyInput[ "left" ] = input.IsButtonDown( KEY_A )
+		self.keyInput[ "right" ] = input.IsButtonDown( KEY_D )
+		
+		self:SendToServer()
 	return end
 	
 	if not self.parentSpaceship then return end
@@ -66,21 +81,21 @@ function ENT:Think()
 	
 	local _, ang = fromWorldToGrid( ship:getGridPos(), ship:getGridAngle(), ship:getPocketPos(), self:GetPos(), self:GetAngles() )
 	
-	if self:GetWireInput( "Forward" ) > 0 then
+	if self:GetWireInput( "Forward" ) > 0 or self.keyInput[ "forward" ] then
 		a = a + ang:Forward() * speed
-	elseif self:GetWireInput( "Backward" ) > 0 then
+	elseif self:GetWireInput( "Backward" ) > 0 or self.keyInput[ "backward" ] then
 		a = a + ang:Forward() * -speed
 	end
 	
-	if self:GetWireInput( "Left" ) > 0 then
+	if self:GetWireInput( "Left" ) > 0 or self.keyInput[ "left" ] then
 		a = a + ang:Right() * -speed
-	elseif self:GetWireInput( "Right" ) > 0 then
+	elseif self:GetWireInput( "Right" ) > 0 or self.keyInput[ "right" ] then
 		a = a + ang:Right() * speed
 	end
 	
-	if self:GetWireInput( "Up" ) > 0 then
+	if self:GetWireInput( "Up" ) > 0 or self.keyInput[ "up" ] then
 		a = a + ang:Up() * speed
-	elseif self:GetWireInput( "Down" ) > 0 then
+	elseif self:GetWireInput( "Down" ) > 0 or self.keyInput[ "down" ] then
 		a = a + ang:Up() * -speed
 	end
 	
@@ -96,8 +111,6 @@ function ENT:Think()
 			self:SendToClients()
 		end
 	end
-	
-	self:SendToServer()
 end
 
 function ENT:Draw()
@@ -125,14 +138,17 @@ function ENT:SendToServer()
 	if SERVER then return end
 	net.Start( "PulpMod_PilotInterface_CLIENT" )
 		net.WriteEntity( self )
+		net.WriteTable( self.keyInput )
 	net.SendToServer()
 end
 
 if SERVER then
 	util.AddNetworkString( "PulpMod_PilotInterface_SERVER" )
+	util.AddNetworkString( "PulpMod_PilotInterface_CLIENT" )
 	
 	net.Receive( "PulpMod_PilotInterface_CLIENT", function( len, ply )
 		local self = net.ReadEntity()
+		self.keyInput = net.ReadTable()
 	end	)
 end
 
