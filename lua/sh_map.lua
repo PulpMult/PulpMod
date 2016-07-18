@@ -66,8 +66,10 @@ else
 
 		end
 
-		surface.DrawLine(x0-5+w/2,y0-5+h/2,x0+5+w/2,y0+5+h/2)
-		surface.DrawLine(x0-5+w/2,y0+5+h/2,x0+5+w/2,y0-5+h/2)
+
+
+		--surface.DrawLine(x0-5+w/2,y0-5+h/2,x0+5+w/2,y0+5+h/2)
+		--surface.DrawLine(x0-5+w/2,y0+5+h/2,x0+5+w/2,y0-5+h/2)
 
 	end
 
@@ -155,6 +157,8 @@ else
 
 		self.gridSpace = 1 -- In GalaxyUnit
 
+		self:SetCursor("none")
+
 	end
 
 	function PANEL:setGalaxyPos( p )
@@ -173,11 +177,25 @@ else
 		surface.SetDrawColor( 25, 25, 25, 255 )
 		surface.DrawRect(0,0,w,h)
 
-		drawStars( w, h, self.window )
 		drawGrid( w, h, self.window, self.gridSpace, Color(100,100,100))
+		drawStars( w, h, self.window )
+
+		local ship = LocalPlayer():getSpaceship()
+		if ship then
+			local pos = (ship:getGalaxyPos() - windowPos) * pxPerUnit + Vector2(w,h)/2
+			surface.SetDrawColor( Color(255,50,50,255) )
+
+			local s = 0.1*pxPerUnit
+
+			surface.DrawOutlinedRect( pos.x-s/2, pos.y-s/2, s, s)
+			print("up")
+		end
+		
 
 		local a,b = self:LocalCursorPos()
 		local cursorPos = ( Vector2(a,b) - Vector2(w,h)/2) / pxPerUnit + windowPos
+
+		local rectW, rectH = 0.03*pxPerUnit, 0.03*pxPerUnit
 
 		local result = sql.Query("SELECT * FROM " .. GrandEspace.sqlStarTable .. " WHERE ((X-(" .. cursorPos.x .."))*(X-(" .. cursorPos.x .."))+(Y-(" .. cursorPos.y .."))*(Y-(" .. cursorPos.y .."))) <= " .. math.pow(20/pxPerUnit,2) .. " ORDER BY ((X-(" .. cursorPos.x .."))*(X-(" .. cursorPos.x .."))+(Y-(" .. cursorPos.y .."))*(Y-(" .. cursorPos.y .."))) LIMIT 1")
 		if result then
@@ -191,7 +209,8 @@ else
 			local str = GrandEspace.getStarName( tonumber(result[1].id) )
 
 			local textw,texth = surface.GetTextSize( str ) 
-			local rectW, rectH = 0.05*pxPerUnit, 0.05*pxPerUnit
+			
+
 
 			surface.SetFont( "TargetID" )
 			surface.SetTextColor( 255, 255, 255, 255 )
@@ -213,12 +232,27 @@ else
 	
 			surface.SetDrawColor( Color(255,255,255,255) )
 			surface.DrawPoly(vertices)
-			surface.SetDrawColor( Color(255,255,255,255) )
+			surface.SetDrawColor( Color(255,255,255,50) )
 			
-			surface.DrawLine(posStarScreen.x-rectW*2, posStarScreen.y,posStarScreen.x+rectW*2, posStarScreen.y)
-			surface.DrawLine(posStarScreen.x, posStarScreen.y-rectH*2,posStarScreen.x, rectH*2+posStarScreen.y)
+			surface.DrawLine(posStarScreen.x-rectW*2, posStarScreen.y,0, posStarScreen.y)
+			surface.DrawLine(posStarScreen.x+rectW*2, posStarScreen.y, w, posStarScreen.y)
+			surface.DrawLine(posStarScreen.x, posStarScreen.y-rectH*2,posStarScreen.x, 0)
+			surface.DrawLine(posStarScreen.x, posStarScreen.y+rectH*2,posStarScreen.x, h)
+
+
+
+
+		else
+
+			surface.SetDrawColor( Color(255,255,255,50) )
+			surface.DrawLine(a-rectW*2, b,0, b)
+			surface.DrawLine(a+rectW*2, b, w, b)
+			surface.DrawLine(a, b-rectH*2,a, 0)
+			surface.DrawLine(a, b+rectH*2,a, h)
 
 		end
+
+		
 
 	end
 
@@ -234,7 +268,7 @@ else
 	function PANEL:ungrab()
 
 		self.grabbed = false
-		self:SetCursor("user")
+		self:SetCursor("none")
 
 	end
 
@@ -277,10 +311,7 @@ else
 
 	function PANEL:Think()
 
-		local s = LocalPlayer():getSpaceship()
-		if s then 
-			self.window.pos = s:getGalaxyPos() --+ (s.velocity or Vector())*(SysTime()-s.lastUpdate)/1e6 
-		end
+
 	end
 
 	vgui.Register( "GrandEspace - MapPanel", PANEL, "Panel" )
