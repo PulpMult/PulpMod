@@ -184,10 +184,12 @@ else
 
 			draw.NoTexture()
 
-			local posStar = Vector2(result[1].x, result[1].y)
+			local posStar = Vector2(tonumber(result[1].x), tonumber(result[1].y))
+	
 			local posStarScreen = Vector2(w,h)/2 + (posStar - windowPos) * pxPerUnit
 
-			local str = tostring(result[1].id) 
+			local str = GrandEspace.getStarName( tonumber(result[1].id) )
+
 			local textw,texth = surface.GetTextSize( str ) 
 			local rectW, rectH = 0.05*pxPerUnit, 0.05*pxPerUnit
 
