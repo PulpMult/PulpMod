@@ -74,7 +74,7 @@ function ENT:Think()
 		a = a + ang:Up() * -speed
 	end
 	
-	self.parentSpaceship.acceleration = a
+	self.parentSpaceship:setAcceleration(a, true)	-- true to force synchronization with the clients
 end
 
 function ENT:Setup(firstSpawn)

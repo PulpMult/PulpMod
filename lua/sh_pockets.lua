@@ -245,10 +245,10 @@ else
 		if not found then
 			print("The position could not be found.")
 		else
-			spaceship:setPocketPos( entryPos )
-			spaceship:setPocketSize( size )
-			spaceship:setGridPos( Vector( math.random( -10000, 10000 ), math.random( -10000, 10000 ), math.random( -10000, 10000 ) ) )
-			spaceship:setGridAngle( Angle( math.random( 0, 360 ), math.random( 0, 360 ), math.random( 0, 360 ) ) )
+			spaceship:setPocketPos( entryPos, true )	--true to force synchronization with the clients
+			spaceship:setPocketSize( size, true )
+			spaceship:setGridPos( Vector( math.random( -10000, 10000 ), math.random( -10000, 10000 ), math.random( -10000, 10000 ) ), true )
+			spaceship:setGridAngle( Angle( math.random( 0, 360 ), math.random( 0, 360 ), math.random( 0, 360 ) ), true )
 		end
 	end
 

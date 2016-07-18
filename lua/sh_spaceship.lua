@@ -36,14 +36,9 @@ function Spaceship.new()
 
 	self.entities = {}
 
-	self.dirty = {
-		galaxyPos = true,
-		gridPos = true,
-		pocketPos = true,
-		pocketSize = true,
-		entities = true,
-		gridAngle = true
-	}
+	self.lastSimulation = SysTime()
+	self.toSync = {}
+	self.recentlySynced = { velocity = true }
 
 	self.id = 0
 
@@ -91,6 +86,11 @@ function Spaceship:delete()
 	net.Broadcast()
 
 	self = nil
+end
+
+function Spaceship:sync(varname)
+	self.toSync[varname] = self[varname]
+	self.recentlySynced[varname] = true
 end
 
 --[[
@@ -144,7 +144,7 @@ function Spaceship:setEntities( e )
 	self.bb_size = Vector(maxV-minV)
 	self.entities = entities
 
-	self.dirty.entities = true
+	self:sync("entities")
 end
 
 function Spaceship:getAABB()
@@ -169,6 +169,18 @@ function Spaceship:getPocketPos()
 
 end
 
+function Spaceship:getAcceleration()
+
+	return self.acceleration
+
+end
+
+function Spaceship:getVelocity()
+
+	return self.velocity
+
+end
+
 function Spaceship:getPocketSize()
 
 	return self.pocketSize
@@ -176,85 +188,110 @@ function Spaceship:getPocketSize()
 end
 
 function Spaceship:getUpdateTable(force)
-	if not next(self.dirty) and not force then return end
+	if force then
+		local t = { id = self.id }
 
-	local data = { [1] = self.id }
-
-	-- Synchronize galaxy pos
-	if self.dirty.galaxyPos or force then
-		data[2] = self:getGalaxyPos()
-	end
-
-	-- Synchronize grid pos
-	if self.dirty.gridPos or force then
-		data[3] = vecToTbl(self:getGridPos())
-	end
-
-	-- Synchronize pocket pos
-	if self.dirty.pocketPos or force then
-		data[4] = vecToTbl(self:getPocketPos())
-	end
-
-	-- Synchronize pocket size
-	if self.dirty.pocketSize or force then
-		data[5] = self:getPocketSize()
-	end
-
-	-- Synchronize entities
-	if self.dirty.entities or force then
-		local e = {}
-		for key,ent in pairs(self:getEntities()) do
-			if IsValid(ent) then
-				e[#e+1] = ent:EntIndex()
+		-- Convert vectors to table
+		for k,_ in pairs(self.recentlySynced) do
+			if type(self[k]) == "Vector" then
+				t[k] = vecToTbl(self[k])
+			else
+				t[k] = self[k]
 			end
 		end
-		data[6] = e
+
+		return t
+	elseif next(self.toSync) then
+		local t = { id = self.id }
+
+		-- Convert vectors to table
+		for k,v in pairs(self.toSync) do
+			if type(v) == "Vector" then
+				t[k] = vecToTbl(v)
+			else
+				t[k] = v
+			end
+		end
+
+		self.toSync = {}
+		return t
 	end
-
-	-- Synchronize grid angle
-	if self.dirty.gridAngle or force then
-		data[7] = self:getGridAngle()
-	end
-
-	self.dirty = {}
-
-	return data
 end
 
 function Spaceship:getOriginalPos()
 	return self.originalPos
 end
 
-function Spaceship:setGridPos( pos )
+function Spaceship:setGridPos( pos, forceSync )
 
 	assert( pos )
-	print(pos)
-	self.gridPos = pos
-	self.dirty.gridPos = true
+	if self.gridPos ~= pos then
+		self.gridPos = pos
+
+		if forceSync then
+			self:sync("gridPos")
+		end
+	end
 
 end
 
-function Spaceship:setGalaxyPos( pos )
+function Spaceship:setGalaxyPos( pos, forceSync )
 
 	assert( pos )
-	self.galaxyPos = pos
-	self.dirty.galaxyPos = true
+	if self.galaxyPos ~= pos then
+		self.galaxyPos = pos
+
+		if forceSync then
+			self:sync("galaxyPos")
+		end
+	end
 
 end
 
 
-function Spaceship:setPocketPos( pos )
+function Spaceship:setPocketPos( pos, forceSync )
 
 	assert( pos )
-	self.pocketPos = pos
-	self.dirty.pocketPos = true
+	if self.pocketPos ~= pos then
+		self.pocketPos = pos
+
+		if forceSync then
+			self:sync("pocketPos")
+		end
+	end
+
+end
+
+function Spaceship:setAcceleration( a, forceSync )
+
+	assert( a )
+	if self.acceleration ~= a then
+		self.acceleration = a
+
+		if forceSync then
+			self:sync("acceleration")
+		end
+	end
+
+end
+
+function Spaceship:setVelocity( v, forceSync )
+
+	assert( v )
+	if self.velocity ~= v then
+		self.velocity = v
+
+		if forceSync then
+			self:sync("velocity")
+		end
+	end
 
 end
 
 function Spaceship:setPocketSize( size )
 
 	self.pocketSize = size
-	self.dirty.pocketSize = true
+	self:sync("pocketSize")
 
 end
 
@@ -267,12 +304,8 @@ end
 function Spaceship:setGridAngle( angle )
 
 	self.gridAngle = assert(angle)
-	self.dirty.gridAngle = true
+	self:sync("gridAngle")
 
-end
-
-function Spaceship:setOriginalPos( pos )
-	self.originalPos = pos
 end
 
 function Spaceship:setOriginalPos( pos )
@@ -317,19 +350,6 @@ end)
 
 if SERVER then
 	util.AddNetworkString("GrandEspace - Delete Spaceship")
-	
-	local maxSpeed = 1000
-	
-	hook.Add( "Think", "GrandEspace - Handling Spaceship's physics", function()
-		local fTime = FrameTime()
-		for k, v in pairs( GrandEspace.World.spaceships ) do
-			v.velocity = v.velocity + v.acceleration * fTime
-			v.velocity = Vector( math.Clamp( v.velocity.x, -maxSpeed, maxSpeed ), math.Clamp( v.velocity.y, -maxSpeed, maxSpeed ), math.Clamp( v.velocity.z, -maxSpeed, maxSpeed ) )
-			if not v.velocity:IsZero() then
-				v:setGridPos( v:getGridPos() + v.velocity * fTime )
-			end
-		end
-	end )
 end
 
 if CLIENT then

@@ -6,6 +6,7 @@ local World = GrandEspace.World
 World.__index = World
 
 World.spaceships = {}
+World.spaceTime = SysTime()		-- This time is sent by the server at each frame for precise physics simulations
 
 function World.addSpaceship( s )
 
@@ -22,6 +23,20 @@ function World.addSpaceship( s )
 
 end
 
+local maxSpeed = 1000
+
+local function simulatePhysics()
+	for k, v in pairs( World.spaceships ) do
+		local dt = World.spaceTime - v.lastSimulation
+		local velocity = v:getVelocity() + v:getAcceleration() * dt
+		v:setVelocity(Vector( math.Clamp( velocity.x, -maxSpeed, maxSpeed ), math.Clamp( velocity.y, -maxSpeed, maxSpeed ), math.Clamp( velocity.z, -maxSpeed, maxSpeed ) ))
+		v:setGridPos(v:getGridPos() + v:getVelocity() * dt)	-- Set noSync to true, don't send the position, the clients compute it
+
+		--print(v:getGridPos())
+		v.lastSimulation = World.spaceTime
+	end
+end
+
 if CLIENT then
 	-- Utility functions
 	local function vecToTbl(vec)
@@ -36,43 +51,53 @@ if CLIENT then
 
 	net.Receive("GrandEspace - Synchronize the world", function( len )
 
-		local curtime = SysTime()
+		World.spaceTime = net.ReadDouble()
 		local t = net.ReadTable()
+		local curtime = SysTime()
 		
 		for _,v in pairs(t) do
 
-			local id, galaxyPos, gridPos, pocketPos, pocketSize, e, gridAngle = v[1], v[2], tblToVec(v[3]), tblToVec(v[4]), v[5], v[6], v[7]
-
-			if not World.spaceships[id] then
-				World.spaceships[id] = Spaceship.new()
+			-- Convert table back to vectors
+			for k,vec in pairs(v) do
+				if type(vec) == "table" and #vec == 3 and type(vec[1]) == "number" and type(vec[2]) == "number" and type(vec[3]) == "number" then
+					v[k] = tblToVec(vec)
+				end
 			end
 
-			local s = World.spaceships[id]
+			if not World.spaceships[v.id] then
+				World.spaceships[v.id] = Spaceship.new()
+			end
+
+			local s = World.spaceships[v.id]
 			
-			if galaxyPos then
-				s.velocity = (galaxyPos-s:getGalaxyPos()) / (curtime-(s.lastUpdate or 0))*1e6
-				s:setGalaxyPos( galaxyPos )
+			if v.galaxyPos then
+				--s:setVelocity((v.galaxyPos-s:getGalaxyPos()) / (curtime-(s.lastUpdate or 0))*1e6)
+				s:setGalaxyPos( v.galaxyPos )
 			end
 
-			if gridPos then s:setGridPos( gridPos ) end
-			if pocketPos then s:setPocketPos( pocketPos ) end
-			if pocketSize then s:setPocketSize( pocketSize ) end
-			if gridAngle then s:setGridAngle( gridAngle ) end
+			if v.gridPos then s:setGridPos( v.gridPos ) end
+			if v.pocketPos then s:setPocketPos( v.pocketPos ) end
+			if v.pocketSize then s:setPocketSize( v.pocketSize ) end
+			if v.gridAngle then s:setGridAngle( v.gridAngle ) end
+			if v.acceleration then s:setAcceleration(v.acceleration) end
+			if v.velocity then s:setVelocity(v.velocity) end
 
 			s.lastUpdate = curtime
 
-			s.id = id
+			s.id = v.id
 
-			if e then
+			if v.entities then
 				local entities = {}
-				for _,ent in pairs(e) do
-					entities[#entities+1] = Entity(ent)
+				for _,ent in pairs(v.entities) do
+					entities[#entities+1] = ent
 				end
 
 				s:setEntities( entities ) -- Will recalculate the bounding box each time O(n)
 			end
 
 		end
+
+		simulatePhysics()
 	end)
 
 	-- Request sync
@@ -83,8 +108,6 @@ if CLIENT then
 else -- SERVER
 
 	util.AddNetworkString("GrandEspace - Synchronize the world")
-
-	local lastShipListing = CurTime()
 
 	local function syncSpaceships(players, force)
 		local t = {}
@@ -100,12 +123,15 @@ else -- SERVER
 		end
 
 		net.Start("GrandEspace - Synchronize the world")
+			net.WriteDouble(World.spaceTime)
 			net.WriteTable(t)
 		net.Broadcast(players)
 	end
 
 	hook.Add("Tick", "GrandEspace - Synchronize the world", function()
+		World.spaceTime = SysTime()
 		syncSpaceships(player.GetAll(), false)
+		simulatePhysics()
 	end)
 
 	net.Receive("GrandEspace - Synchronize the world", function(len, ply)
