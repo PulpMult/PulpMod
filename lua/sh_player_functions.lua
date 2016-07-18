@@ -16,6 +16,16 @@ end
 
 if CLIENT then
 
+	function PlayerObj:setThirdPerson( bool )
+		if self ~= LocalPlayer() then return end
+		self.thirdPerson = bool
+	end
+
+	function PlayerObj:getThirdPerson()
+		if self ~= LocalPlayer() then return false end
+		return self.thirdPerson or false
+	end
+	
 	hook.Add("FinishMove", "GrandEspace - Detection whether the player is in a ship", function(ply, mv)
 
 		local World = GrandEspace.World

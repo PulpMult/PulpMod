@@ -42,7 +42,18 @@ function ENT:GetWireInput( name )
 end
 
 function ENT:Think()
-	if CLIENT then return end
+	if CLIENT then
+		local ply = LocalPlayer()
+	
+		if not ply:InVehicle() then
+			ply:setThirdPerson( false )
+		return end
+		
+		if ( not IsValid( self.seat ) ) or ( not self.seat:IsVehicle() ) then return end
+		if ply:GetVehicle() ~= self.seat then return end
+		ply:setThirdPerson( self.seat:GetThirdPersonMode() )
+	return end
+	
 	if not self.parentSpaceship then return end
 	if not self.Inputs then return end
 	
@@ -57,7 +68,6 @@ function ENT:Think()
 	
 	if self:GetWireInput( "Forward" ) > 0 then
 		a = a + ang:Forward() * speed
-		print( "FLYING" )
 	elseif self:GetWireInput( "Backward" ) > 0 then
 		a = a + ang:Forward() * -speed
 	end
@@ -75,12 +85,9 @@ function ENT:Think()
 	end
 	
 	self.parentSpaceship:setAcceleration(a, true)	-- true to force synchronization with the clients
-end
-
-function ENT:Setup(firstSpawn)
-	if firstSpawn then
-		//self:SetAngles(self:GetAngles() + Angle(-90, 0, 0))
-	end
+	
+	self:SyncWithClient()
+	self:SyncWithServer()
 end
 
 function ENT:Draw()
@@ -93,4 +100,37 @@ end
 
 function ENT:TriggerInput( iname, value )
 	self.Inputs[ iname ].value = value
+end
+
+function ENT:SyncWithServer()
+	if CLIENT then return end
+	
+	if not self.Inputs then return end
+	if not self.Inputs[ "Seat" ] then return end
+	if not self.Inputs[ "Seat" ].value then return end
+	
+	net.Start( "PulpMod_PilotInterface_SERVER" )
+		net.WriteEntity( self.Inputs[ "Seat" ].value )
+	net.Broadcast()
+end
+
+function ENT:SyncWithClient()
+	if SERVER then return end
+	net.Start( "PulpMod_PilotInterface_CLIENT" )
+		
+	net.SendToServer()
+end
+
+if SERVER then
+	util.AddNetworkString( "PulpMod_PilotInterface_SERVER" )
+	
+	net.Receive( "PulpMod_PilotInterface_CLIENT", function( len, ply )
+		
+	end	)
+end
+
+if CLIENT then
+	net.Receive( "PulpMod_PilotInterface_SERVER", function( len )
+		self.seat = net.ReadEntity()
+	end )
 end

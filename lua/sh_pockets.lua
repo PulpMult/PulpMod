@@ -1,8 +1,5 @@
 AddCSLuaFile()
 
--- TODO: Do not use a global variable !
-GrandEspace_THIRDPERSON = false
-
 if CLIENT then 
 
 	local function fromGridToWorld( gridPos, gridAngle, pocketPos, pos, ang )
@@ -13,8 +10,6 @@ if CLIENT then
 	
 	local mat = Material("materials/stars2.png")
 
-	-- TODO: Do not use a global variable !
-	local thirdPerson = GrandEspace_THIRDPERSON
 	local sizeMicroPocket = Vector(100,100,100) -- The size of the box around the head of the player in 3rd person
 
 	local old = {}
@@ -23,7 +18,8 @@ if CLIENT then
 		local World = GrandEspace.World
 
 		local ship = LocalPlayer():getSpaceship()
-
+		local thirdPerson = LocalPlayer():getThirdPerson()
+		
 		if ship then
 			
 			render.SetColorMaterial()
@@ -145,7 +141,7 @@ if CLIENT then
 		end
 
 	end)
-
+	
 else
 	local pocket = {}
 
