@@ -92,12 +92,12 @@ if SERVER then
 					local direction = pos - ent.parentSpaceship:getGalaxyPos()
 
 					if direction:Length() <= ent.speed then
-						ent.parentSpaceship:setGalaxyPos(pos)
+						ent.parentSpaceship:setGalaxyPos(pos, true)
 						timer.Destroy(timername)
 						ent.traveling = false
 						ent:SetState(PHASE_IDLE)
 					else
-						ent.parentSpaceship:setGalaxyPos(ent.parentSpaceship:getGalaxyPos() + direction:GetNormalized()*ent.speed)
+						ent.parentSpaceship:setGalaxyPos(ent.parentSpaceship:getGalaxyPos() + direction:GetNormalized()*ent.speed, true)
 					end
 				end)
 			end)
