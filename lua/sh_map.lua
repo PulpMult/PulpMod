@@ -15,6 +15,7 @@ if SERVER then
 
 else
 
+	local Vector2 = GrandEspace.Vector2
 	local surface = surface
 
 	local GALAXY_SIZE = 10

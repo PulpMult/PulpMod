@@ -7,11 +7,16 @@ ENT.Author = "Marmotte"
 
 ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 
+local Vector2 = GrandEspace.Vector2
+
 local PHASE_IDLE = 1
 local PHASE_LOADING = 2
 local PHASE_MOVING = 3
 
 function ENT:Initialize()
+
+	Vector2 = GrandEspace.Vector2
+
 	if CLIENT then
 		self.lastClick = CurTime()
 		self.lastQuery = CurTime()
@@ -97,6 +102,7 @@ if SERVER then
 						ent.traveling = false
 						ent:SetState(PHASE_IDLE)
 					else
+						print(Vector2)
 						ent.parentSpaceship:setGalaxyPos(ent.parentSpaceship:getGalaxyPos() + direction:GetNormalized()*ent.speed, true)
 					end
 				end)

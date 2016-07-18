@@ -24,9 +24,32 @@ net.WriteVars[254] = function( t, v )
 	net.WriteVector2( v )
 end
 
-net.ReadVars[254] = function()
+net.ReadVars[254] = function() 
 	return net.ReadVector2()
 end
+
+
+function VECTOR2.new( x, y )
+	local self = {}
+	setmetatable( self, VECTOR2 )
+	
+	self.x = x or 0
+	self.y = y or 0
+	
+	return self
+end
+
+local function Vector2( x, y )
+
+	x = x or 0
+	y = y or 0	
+	if isnumber(x) and isnumber(y) then
+		return VECTOR2.new( x, y )
+	elseif isvector2(x) or isvector(x) then
+		return VECTOR2.new(x.x, x.y)
+	end
+end
+GrandEspace.Vector2 = Vector2
 
 function net.WriteVector2( v )
 	assert(isvector2(v))
@@ -40,28 +63,8 @@ function net.ReadVector2( )
 	return Vector2(x,y)
 end
 
-function VECTOR2.new( x, y )
-	local self = {}
-	setmetatable( self, VECTOR2 )
-	
-	self.x = x or 0
-	self.y = y or 0
-	
-	return self
-end
 
-function Vector2( x, y )
 
-	x = x or 0
-	y = y or 0	
-	if isnumber(x) and isnumber(y) then
-		return VECTOR2.new( x, y )
-	elseif isvector2(x) or isvector(x) then
-		return VECTOR2.new(x.x, x.y)
-	end
-end
-
-local Vector2 = Vector2
 
 function VECTOR2:__tostring()
 	return tostring(self.x) .. " " .. tostring(self.y)

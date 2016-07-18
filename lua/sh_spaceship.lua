@@ -3,6 +3,8 @@ AddCSLuaFile()
 Spaceship = {}
 Spaceship.__index = Spaceship
 
+local Vector2 = GrandEspace.Vector2
+
 -- Utility functions
 local function vecToTbl(vec)
 	if not vec then return end
