@@ -84,6 +84,7 @@ if SERVER then
 				if not IsValid(ent) then return end
 
 				ent:SetState(PHASE_MOVING)
+				ent.parentSpaceship:setInHyperSpace(true)
 
 				-- ... then, move the ship
 				local timername = "warp_" .. ent:EntIndex()
@@ -91,6 +92,7 @@ if SERVER then
 					if not IsValid(ent) or not ent.parentSpaceship then
 						timer.Destroy(timername)
 						ent.traveling = false
+						if ent.parentSpaceship then ent.parentSpaceship:setInHyperSpace(false) end
 						return
 					end
 
@@ -100,6 +102,7 @@ if SERVER then
 						ent.parentSpaceship:setGalaxyPos(pos, true)
 						timer.Destroy(timername)
 						ent.traveling = false
+						if ent.parentSpaceship then ent.parentSpaceship:setInHyperSpace(false) end
 						ent:SetState(PHASE_IDLE)
 					else
 						ent.parentSpaceship:setGalaxyPos(ent.parentSpaceship:getGalaxyPos() + direction:GetNormalized()*ent.speed, true)
@@ -146,8 +149,11 @@ net.Receive("PulpMod_WarpDrive", function(len)
 	local ent = net.ReadEntity()
 	ent.state = net.ReadFloat()
 
+	local inHyperSpace = ent.state == PHASE_MOVING
+	ent.parentSpaceship:setInHyperSpace(inHyperSpace)
+
 	if ent.parentSpaceship == LocalPlayer():getSpaceship() then
-		toggleHyperSpace(ent.state == PHASE_MOVING)
+		toggleHyperSpace(inHyperSpace)
 	end
 end)
 
@@ -391,7 +397,7 @@ end
 sound.Add({
 	name = "hyperspace_bg",
 	channel = CHAN_STATIC,
-	volume = 0.5,
+	volume = 0.75,
 	level = 511,
 	pitch = 100,
 	sound = "marmotte/hyperspace_bg.wav"
