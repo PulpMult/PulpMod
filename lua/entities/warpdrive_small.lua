@@ -131,10 +131,20 @@ surface.CreateFont("WarpDriveConsole", {
 	outline = false,
 })
 
+GrandEspace.inHyperSpace = false
+
 -- Retrieve the state of the warp drive from the server
 net.Receive("PulpMod_WarpDrive", function(len)
 	local ent = net.ReadEntity()
 	ent.state = net.ReadFloat()
+
+	if ent.parentSpaceship == LocalPlayer():getSpaceship() then
+		if ent.state == PHASE_MOVING then
+			GrandEspace.inHyperSpace = true
+		else
+			GrandEspace.inHyperSpace = false
+		end
+	end
 end)
 
 
