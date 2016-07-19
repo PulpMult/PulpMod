@@ -33,7 +33,7 @@ function ENT:Initialize()
 
 	-- SHARED
 	self.loading = 10		-- seconds
-	self.speed = 0.1/66		-- parsec/tick
+	self.speed = 0.02/66		-- parsec/tick
 	self.state = PHASE_IDLE
 
 	self:SetModel("models/props_combine/combine_intmonitor003.mdl")
@@ -102,7 +102,6 @@ if SERVER then
 						ent.traveling = false
 						ent:SetState(PHASE_IDLE)
 					else
-						print(Vector2)
 						ent.parentSpaceship:setGalaxyPos(ent.parentSpaceship:getGalaxyPos() + direction:GetNormalized()*ent.speed, true)
 					end
 				end)
@@ -133,17 +132,22 @@ surface.CreateFont("WarpDriveConsole", {
 
 GrandEspace.inHyperSpace = false
 
+local function toggleHyperSpace(bool)
+	GrandEspace.inHyperSpace = bool
+
+	LocalPlayer():StopSound("hyperspace_bg")
+	if bool then
+		LocalPlayer():EmitSound("hyperspace_bg")
+	end
+end
+
 -- Retrieve the state of the warp drive from the server
 net.Receive("PulpMod_WarpDrive", function(len)
 	local ent = net.ReadEntity()
 	ent.state = net.ReadFloat()
 
 	if ent.parentSpaceship == LocalPlayer():getSpaceship() then
-		if ent.state == PHASE_MOVING then
-			GrandEspace.inHyperSpace = true
-		else
-			GrandEspace.inHyperSpace = false
-		end
+		toggleHyperSpace(ent.state == PHASE_MOVING)
 	end
 end)
 
@@ -382,3 +386,21 @@ function ENT:GetClosestStars(x, y, count, range)
 	end
 	return result
 end
+
+-- Handle sounds
+sound.Add({
+	name = "hyperspace_bg",
+	channel = CHAN_STATIC,
+	volume = 0.5,
+	level = 511,
+	pitch = 100,
+	sound = "marmotte/hyperspace_bg.wav"
+})
+
+hook.Add("GrandEspace - LocalPlayer changed ship", "ToggleHyperSpace", function(ship, old)
+	if ship then
+		toggleHyperSpace(ship:isInHyperSpace())
+	else
+		toggleHyperSpace(false)
+	end
+end)
