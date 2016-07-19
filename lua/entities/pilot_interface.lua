@@ -62,6 +62,7 @@ function ENT:Think()
 	local acceleration = Vector()
 	
 	if self:GetWireInputAsNumber( "Forward" ) > 0 then
+		print( "test" )
 		acceleration = acceleration + gridAngle:Forward() * speed
 	elseif self:GetWireInputAsNumber( "Backward" ) > 0 then
 		acceleration = acceleration - gridAngle:Forward() * speed
