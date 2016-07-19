@@ -37,13 +37,14 @@ function Spaceship.new()
 	self.bb_size = Vector()
 
 	self.entities = {}
+	self.inHyperSpace = false
 
 	self.lastSimulation = SysTime()
 	self.toSync = {}
 	self.syncOnForce = { 
 		"galaxyPos", "gridPos", "gridAng", "velocity", 
 		"acceleration", "pocketPos", "pocketSize",
-		"entities" }
+		"entities", "inHyperSpace" }
 
 	self.id = 0
 
@@ -316,6 +317,13 @@ function Spaceship:setOriginalPos( pos )
 	self.originalPos = pos
 end
 
+function Spaceship:setInHyperSpace( bool )
+
+	self.inHyperSpace = bool
+	self:sync("inHyperSpace")
+
+end
+
 function Spaceship:isIn( pos, ofShip )
 
 	local p = pos - (self.bb_pos or self:getPocketPos())
@@ -330,6 +338,12 @@ function Spaceship:isIn( pos, ofShip )
 	end
 
 	return math.max( math.abs(p.x/s.x), math.abs(p.y/s.y), math.abs(p.z/s.z) ) <= 1
+end
+
+function Spaceship:isInHyperSpace()
+
+	return self.inHyperSpace
+
 end
 
 hook.Add( "EntityRemoved", "GrandEspace - Remove removed props from ships", function(e) 
