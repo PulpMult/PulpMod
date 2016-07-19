@@ -2,6 +2,82 @@ AddCSLuaFile()
 
 if CLIENT then 
 
+	local mat = Material("spacebuild/fusion2")
+	local radius = 500
+	local radius2 = 100
+	local maxDuration = 10
+	local material = Material( "sprites/light_ignorez" )
+	local white = Color( 255, 255, 255, 200 )
+
+	local function newStar()
+		local ang = math.random(0,360)
+		local st = CurTime() - math.random()*maxDuration	
+		return {ang, st , st + math.random()*maxDuration}
+	end
+
+	local stars = {  }
+	
+
+	
+
+
+	local function drawHyperSpace( pos, a, radius )
+
+		local a2 = Angle()
+		a2:Set(a)
+		a2:RotateAroundAxis(a2:Right(),90)
+
+		local forward = a:Forward()
+		local right = a:Right()
+		local up = a:Up()
+		local startPos0 = pos + forward*radius*20
+
+	 	
+
+		render.SetColorMaterial()
+		render.DrawSphere(pos, -10000, 50, 50, Color(0,0,0,255))
+			
+		bubble:SetRenderOrigin(pos)
+		bubble:SetRenderAngles(a2)
+
+		--bubble:SetColor(Color(255,0,0,255))
+		bubble:SetNoDraw(true)
+
+	 	render.SetBlend( 0.2 ) 
+		render.ModelMaterialOverride( mat )
+		render.SuppressEngineLighting(true)
+		bubble:DrawModel()
+		render.SuppressEngineLighting(false)
+		render.ModelMaterialOverride()
+		render.SetBlend( 1 )
+
+		render.SetMaterial( material )
+		for k, star in pairs(stars) do
+			local ang = star[1]
+			local startPos = startPos0 + radius/5*(math.cos(ang)*up + math.sin(ang)*right)
+			local endPos = pos + radius * (up*math.cos(ang)+right*math.sin(ang))
+			local startTime = star[2]
+			local endTime = star[3]
+
+			local ratio = math.Clamp( (CurTime()-startTime)/(endTime-startTime), 0, 2)
+			
+
+			if ratio >= 2 then
+				stars[k] =  newStar()
+			end
+
+			if ratio > 0 then
+
+				local s = 1/(endTime - startTime)*128*2
+				white.a = math.Clamp(s*2,0,255)
+				render.DrawSprite( startPos * (1-ratio) + endPos * ratio, s, s, white ) 
+			end
+		
+		end
+		render.SetMaterial( material ) 
+
+	end
+
 	local function fromGridToWorld( gridPos, gridAngle, pocketPos, pos, ang )
 
 		local a,b = WorldToLocal( pos or Vector(), ang or Vector(), gridPos, gridAngle )
@@ -13,6 +89,8 @@ if CLIENT then
 	local sizeMicroPocket = Vector(100,100,100) -- The size of the box around the head of the player in 3rd person
 
 	local old = {}
+
+	local lastHyperSpace = false
 
 	hook.Add("PostDrawOpaqueRenderables", "GrandEspace - Render other ships & pockets", function()
 		local World = GrandEspace.World
@@ -38,12 +116,49 @@ if CLIENT then
 		
 			render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
 
-			render.SetMaterial(mat)
+			
 			cam.Start3D( EyePos(), EyeAngles() )
 				
-				render.DepthRange( 0, 0 ) 
-				render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
-				render.DepthRange( 0, 1 ) 
+				
+
+				if lastHyperSpace ~= GrandEspace.inHyperSpace then
+					for i=1, 200	 do
+						stars[#stars+1] = newStar()
+					end
+					lastHyperSpace = GrandEspace.inHyperSpace
+
+
+					if GrandEspace.inHyperSpace and not bubble then
+						bubble = ClientsideModel("models/holograms/hq_icosphere.mdl")
+						local m = Matrix()
+						m:Scale(-Vector(500,500,10000)*2/12)
+						bubble:EnableMatrix( "RenderMultiply", m )
+						bubble:SetColor(Color(255,255,255,0))
+						bubble:SetNoDraw(true)
+					end
+					
+					if not GrandEspace.inHyperSpace and bubble then
+						bubble:Remove()
+						bubble = nil
+					end
+
+
+				end
+
+				if LocalPlayer():getSpaceship() and GrandEspace.inHyperSpace then
+					
+					render.SetColorMaterial()
+					render.DepthRange( 0, 0 ) 
+					render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
+					drawHyperSpace( LocalPlayer():getSpaceship():getPocketPos(), Angle(), LocalPlayer():getSpaceship():getPocketSize():Length() )
+					render.DepthRange( 0, 1 ) 
+				else
+					
+					render.SetMaterial(mat)
+					render.DepthRange( 0, 0 ) 
+					render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
+					render.DepthRange( 0, 1 ) 
+				end
 
 			cam.End3D()	
 		
@@ -121,6 +236,7 @@ if CLIENT then
 	end)
 
 	local blacklist = { player=true, viewmodel=true, physgun_beam=true}
+	blacklist["class C_BaseFlex"] = true
 
 
 
