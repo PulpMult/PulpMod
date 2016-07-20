@@ -177,14 +177,14 @@ if CLIENT then
 		end
 
 		if ship then 
-			local gridPos = ship:getGridPos()
-			local gridAng = ship:getGridAngle()
+			local gridPos = ship:getGridPosLerp()
+			local gridAng = ship:getGridAngleLerp()
 			local pocketPos = ship:getPocketPos()
 			local pocketSize = ship:getPocketSize()
 			local shootPos = EyePos()
 
 			if thirdPerson then
-				gridPos = ship:getGridPos() - EyeAngles():Forward()*1000 - (LocalPlayer():GetShootPos()-ship:getPocketPos())
+				gridPos = ship:getGridPosLerp() - EyeAngles():Forward()*1000 - (LocalPlayer():GetShootPos()-ship:getPocketPos())
 				gridAng = Angle()
 			end
 
@@ -194,15 +194,23 @@ if CLIENT then
 				spaceships[k] = v
 			end
 			table.sort(spaceships, function(a, b) 
-				return ship:getGridPos():Distance(a:getGridPos()) < ship:getGridPos():Distance(b:getGridPos())
+				return ship:getGridPosLerp():Distance(a:getGridPosLerp()) < ship:getGridPosLerp():Distance(b:getGridPosLerp())
 			end)
 
 			for k,v in pairs(spaceships) do
 				-- Position and orientation of the ship in the world
-				local shipWorldPos, shipWorldAng = fromGridToWorld(gridPos, gridAng, pocketPos, v:getGridPos(), v:getGridAngle())
+				local shipWorldPos, shipWorldAng = fromGridToWorld(gridPos, gridAng, pocketPos, v:getGridPosLerp(), v:getGridAngleLerp())
 
 				-- Center of the ship projected on the virtual plane
-				local projCenter, norm, fraction = util.IntersectRayWithOBB(shipWorldPos, (shootPos-shipWorldPos)*1000, pocketPos, Angle(), -k*pocketSize/2, k*pocketSize/2)
+				local projCenter
+				if shipWorldPos:DistToSqr(pocketPos) < (k*pocketSize):LengthSqr() then
+					projCenter = shipWorldPos
+				else
+					projCenter = util.IntersectRayWithOBB(shipWorldPos, (shootPos-shipWorldPos)*1000, pocketPos, Angle(), -k*pocketSize/2, k*pocketSize/2)
+				end
+
+				-- Center of the ship projected on the virtual plane
+				--local projCenter, norm, fraction = util.IntersectRayWithOBB(shipWorldPos, (shootPos-shipWorldPos)*1000, pocketPos, Angle(), -k*pocketSize/2, k*pocketSize/2)
 
 				if projCenter then
 					-- Scale factor of projection
