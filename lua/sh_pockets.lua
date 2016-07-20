@@ -64,6 +64,7 @@ if CLIENT then
 		render.SetMaterial( material )
 
 		local ang, startPos, endPos, startTime, endTime, ratio, s, x
+		local weshAlors = Vector()
 
 		local curtime = CurTime()
 
@@ -83,7 +84,13 @@ if CLIENT then
 
 				s = 1/(endTime - startTime)*128*2
 				white.a = clamp(s*2,0,255)
-				render.DrawSprite( LerpVector(ratio, startPos, endPos), s, s, white ) 
+
+				-- Avoids creating a vector for each of the star
+				weshAlors.x =  startPos.x * (1-ratio) + endPos.x * ratio
+				weshAlors.y =  startPos.y * (1-ratio) + endPos.y * ratio
+				weshAlors.z =  startPos.z * (1-ratio) + endPos.z * ratio
+
+				render.DrawSprite( weshAlors, s, s, white ) 
 			end
 		
 		end
