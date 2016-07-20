@@ -261,7 +261,7 @@ if CLIENT then
 			
 			if IsValid(v) and not blacklist[v:GetClass()] then
 				
-				local hide = true
+				local hide = (ship ~= nil)
 				if ship and v.parentSpaceship == ship and not tp then
 					hide = false
 				end
