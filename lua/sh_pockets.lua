@@ -2,6 +2,8 @@ AddCSLuaFile()
 
 if CLIENT then 
 
+	local render =render 
+
 	local mat = Material("spacebuild/fusion2")
 	local radius = 500
 	local radius2 = 100

@@ -1,3 +1,5 @@
+assert( WireLib )
+
 AddCSLuaFile()
 
 DEFINE_BASECLASS("base_anim")
@@ -9,7 +11,6 @@ ENT.RenderGroup = RENDERGROUP_OPAQUE
 ENT.WireDebugName = ENT.PrintName
 
 function ENT:Initialize()
-	assert( WireLib )
 	
 	if CLIENT then return end
 	
@@ -24,7 +25,7 @@ function ENT:Initialize()
 	end
 	
 	WireLib.CreateSpecialInputs( self,
-		{ "Forward", "Backward", "Left", "Right", "Up", "Down", "PitchUp", "PitchDown", "YawRight", "YawLeft", "RollLeft", "RollRight", "Seat" },
+		{ "Forward", "Backward", "Left", "Right", "Up", "Down", "PitchUp", "PitchDown","YawLeft", "YawRight", "RollLeft", "RollRight", "Seat" },
 		{ "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "ENTITY" } )
 end
 
