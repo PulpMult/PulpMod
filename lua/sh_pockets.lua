@@ -143,8 +143,9 @@ if CLIENT then
 			cam.Start3D( EyePos(),  ang2)
 				
 				if lastHyperSpace ~= GrandEspace.inHyperSpace then
+
 					for i=1, 500	 do
-						stars[#stars+1] = newStar(LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length() )
+						stars[i] = newStar(LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length() )
 					end
 					lastHyperSpace = GrandEspace.inHyperSpace
 
