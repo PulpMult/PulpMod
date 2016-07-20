@@ -12,6 +12,8 @@ if CLIENT then
 		return GrandEspace.thirdPerson or false
 	end
 
+	local World = GrandEspace.World
+
 	local mat = Material("spacebuild/fusion2")
 	local radius = 500
 	local radius2 = 100
@@ -43,9 +45,11 @@ if CLIENT then
 
 	local stars = {  }
 	
+	local ang, startPos, endPos, startTime, endTime, ratio, s, x
+	local weshAlors = Vector()
+
 	local function drawHyperSpace( pos, radius )
  	
-
 		render.SetColorMaterial()
 		render.DrawSphere(pos, -10000, 50, 50, Color(0,0,0,255))
 			
@@ -63,9 +67,6 @@ if CLIENT then
 
 		render.SetMaterial( material )
 
-		local ang, startPos, endPos, startTime, endTime, ratio, s, x
-		local weshAlors = Vector()
-
 		local curtime = CurTime()
 
 		for k, star in pairs(stars) do
@@ -74,7 +75,7 @@ if CLIENT then
 			startTime = star[3]
 			endTime = star[4]
 
-			ratio = clamp( (curtime-startTime)/(endTime-startTime), 0, 2)
+			ratio = (curtime-startTime)/(endTime-startTime)
 			
 			if ratio >= 2 then
 				stars[k] =  newStar(LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length() )
@@ -82,7 +83,7 @@ if CLIENT then
 
 			if ratio > 0 then
 
-				s = 1/(endTime - startTime)*128*2
+				s = 256/(endTime - startTime)
 				white.a = clamp(s*2,0,255)
 
 				-- Avoids creating a vector for each of the star
@@ -90,7 +91,7 @@ if CLIENT then
 				weshAlors.y =  startPos.y * (1-ratio) + endPos.y * ratio
 				weshAlors.z =  startPos.z * (1-ratio) + endPos.z * ratio
 
-				render.DrawSprite( weshAlors, s, s, white ) 
+				render.DrawSprite( weshAlors, s, s, white )
 			end
 		
 		end
@@ -114,11 +115,10 @@ if CLIENT then
 	local lastHyperSpace = false
 
 	hook.Add("PostDrawOpaqueRenderables", "GrandEspace - Render other ships & pockets", function()
-		local World = GrandEspace.World
 
 		local ship = LocalPlayer():getSpaceship()
 		local thirdPerson = GrandEspace.getThirdPerson()
-		
+
 		if ship then
 			
 			render.SetColorMaterial()
