@@ -3,7 +3,7 @@ hook.Add( "HUDPaint", "GrandEspace - HUD while in space", function()
 	if not IsValid( ply ) then return end
 
 	local World = GrandEspace.World
-	local thirdPerson = LocalPlayer():getThirdPerson()
+	local thirdPerson = GrandEspace.getThirdPerson()
 	
 	local ship = ply:getSpaceship()
 	if not ship then return end

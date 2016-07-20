@@ -39,20 +39,20 @@ function ENT:Think()
 		local ply = LocalPlayer()
 	
 		if not ply:InVehicle() then
-			ply:setThirdPerson( false )
+			GrandEspace.setThirdPerson( false )
 		return end
 		
 		if ( not IsValid( self.seat ) ) or ( not self.seat:IsVehicle() ) then return end
 		if ply:GetVehicle() ~= self.seat then return end
 		
-		ply:setThirdPerson( self.seat:GetThirdPersonMode() )
+		GrandEspace.setThirdPerson( self.seat:GetThirdPersonMode() )
 	return end
 	
-	if not self.parentSpaceship then return end
+	if not self.parentSpaceship or not self.parentSpaceship.getGridAngle then return end
 	if not self.Inputs then return end
 	
 	local ship = self.parentSpaceship
-	
+
 	local gridAngle = ship:getGridAngle()
 	
 	// This will be later implemented into spaceship class and depend on modules or other shit.
