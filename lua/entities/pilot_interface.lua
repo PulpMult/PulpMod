@@ -52,14 +52,14 @@ function ENT:Think()
 	if not self.Inputs then return end
 	
 	local ship = self.parentSpaceship
-
-	local gridAngle = ship:getGridAngle()
 	
 	// This will be later implemented into spaceship class and depend on modules or other shit.
 	local speed = 1000
 	local degrees = 5
 	
+	local gridAngle = ship:getGridAngle()
 	local acceleration = Vector()
+	local angularAcceleration = Angle()
 	
 	if self:GetWireInputAsNumber( "Forward" ) > 0 then
 		acceleration = acceleration + gridAngle:Forward() * speed
@@ -81,25 +81,25 @@ function ENT:Think()
 	
 	// Turning
 	if self:GetWireInputAsNumber( "PitchUp" ) > 0 then
-		gridAngle:RotateAroundAxis( gridAngle:Right(), degrees )
+		angularAcceleration:RotateAroundAxis( gridAngle:Right(), degrees )
 	elseif self:GetWireInputAsNumber( "PitchDown" ) > 0 then
-		gridAngle:RotateAroundAxis( gridAngle:Right(), -degrees )
+		angularAcceleration:RotateAroundAxis( gridAngle:Right(), -degrees )
 	end
 	
 	if self:GetWireInputAsNumber( "YawRight" ) > 0 then
-		gridAngle:RotateAroundAxis( gridAngle:Up(), degrees )
+		angularAcceleration:RotateAroundAxis( gridAngle:Up(), degrees )
 	elseif self:GetWireInputAsNumber( "YawLeft" ) > 0 then
-		gridAngle:RotateAroundAxis( gridAngle:Up(), -degrees )
+		angularAcceleration:RotateAroundAxis( gridAngle:Up(), -degrees )
 	end
 	
 	if self:GetWireInputAsNumber( "RollRight" ) > 0 then
-		gridAngle:RotateAroundAxis( gridAngle:Forward(), degrees )
+		angularAcceleration:RotateAroundAxis( gridAngle:Forward(), degrees )
 	elseif self:GetWireInputAsNumber( "RollLeft" ) > 0 then
-		gridAngle:RotateAroundAxis( gridAngle:Forward(), -degrees )
+		angularAcceleration:RotateAroundAxis( gridAngle:Forward(), -degrees )
 	end
 	
 	ship:setAcceleration( acceleration, true )
-	ship:setGridAngle( gridAngle, true )
+	ship:setAngularAcceleration( angularAcceleration, true )
 	
 	if not self.Inputs[ "Seat" ] then return end
 	if not self.Inputs[ "Seat" ].value then return end
