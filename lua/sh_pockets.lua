@@ -19,34 +19,38 @@ if CLIENT then
 	local material = Material( "sprites/light_ignorez" )
 	local white = Color( 255, 255, 255, 200 )
 
-	local function newStar()
-		local ang = math.random(0,360)
-		local st = CurTime() - math.random()*maxDuration	
-		return {ang, st , st + math.random()*maxDuration}
+	local a2 = Angle(90,0,0)
+	local forward = Vector(1,0,0)
+	local right = Vector(0,1,0)
+	local up = Vector(0,0,1)
+	local cos = math.cos
+	local sin = math.sin
+	local clamp = math.Clamp
+	local random = math.random
+
+	local function newStar( pos, radius )
+
+		local startPos0 = pos + forward*radius*20
+
+		local ang = random(0,360)
+		local x = cos(ang) * up +  sin(ang) * right
+		local startPos = startPos0 + radius/5*x
+		local endPos = pos + radius * x
+
+		local st = CurTime() - random()*maxDuration	
+		return {startPos, endPos, st , st + random()*maxDuration}
 	end
 
 	local stars = {  }
 	
-	local function drawHyperSpace( pos, a, radius )
-
-		local a2 = Angle()
-		a2:Set(a)
-		a2:RotateAroundAxis(a2:Right(),90)
-
-		local forward = a:Forward()
-		local right = a:Right()
-		local up = a:Up()
-		local startPos0 = pos + forward*radius*20
-
-	 	
+	local function drawHyperSpace( pos, radius )
+ 	
 
 		render.SetColorMaterial()
 		render.DrawSphere(pos, -10000, 50, 50, Color(0,0,0,255))
 			
 		bubble:SetRenderOrigin(pos)
 		bubble:SetRenderAngles(a2)
-
-		--bubble:SetColor(Color(255,0,0,255))
 		bubble:SetNoDraw(true)
 
 	 	render.SetBlend( 0.2 ) 
@@ -58,28 +62,32 @@ if CLIENT then
 		render.SetBlend( 1 )
 
 		render.SetMaterial( material )
+
+		local ang, startPos, endPos, startTime, endTime, ratio, s, x
+
+		local curtime = CurTime()
+
 		for k, star in pairs(stars) do
-			local ang = star[1]
-			local startPos = startPos0 + radius/5*(math.cos(ang)*up + math.sin(ang)*right)
-			local endPos = pos + radius * (up*math.cos(ang)+right*math.sin(ang))
-			local startTime = star[2]
-			local endTime = star[3]
+			startPos = star[1]
+			endPos = star[2]
+			startTime = star[3]
+			endTime = star[4]
 
-			local ratio = math.Clamp( (CurTime()-startTime)/(endTime-startTime), 0, 2)
+			ratio = clamp( (curtime-startTime)/(endTime-startTime), 0, 2)
 			
-
 			if ratio >= 2 then
-				stars[k] =  newStar()
+				stars[k] =  newStar(LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length() )
 			end
 
 			if ratio > 0 then
 
-				local s = 1/(endTime - startTime)*128*2
-				white.a = math.Clamp(s*2,0,255)
-				render.DrawSprite( startPos * (1-ratio) + endPos * ratio, s, s, white ) 
+				s = 1/(endTime - startTime)*128*2
+				white.a = clamp(s*2,0,255)
+				render.DrawSprite( LerpVector(ratio, startPos, endPos), s, s, white ) 
 			end
 		
 		end
+
 		render.SetMaterial( material ) 
 
 	end
@@ -128,8 +136,8 @@ if CLIENT then
 			cam.Start3D( EyePos(),  ang2)
 				
 				if lastHyperSpace ~= GrandEspace.inHyperSpace then
-					for i=1, 200	 do
-						stars[#stars+1] = newStar()
+					for i=1, 500	 do
+						stars[#stars+1] = newStar(LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length() )
 					end
 					lastHyperSpace = GrandEspace.inHyperSpace
 
@@ -156,7 +164,7 @@ if CLIENT then
 					render.SetColorMaterial()
 					render.DepthRange( 0, 0 ) 
 					render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
-					drawHyperSpace( LocalPlayer():getSpaceship():getPocketPos(), Angle(), LocalPlayer():getSpaceship():getPocketSize():Length() )
+					drawHyperSpace( LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length())
 					render.DepthRange( 0, 1 ) 
 				else
 					
