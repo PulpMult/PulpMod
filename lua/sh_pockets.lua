@@ -165,7 +165,7 @@ if CLIENT then
 					if GrandEspace.inHyperSpace and not bubble then
 						bubble = ClientsideModel("models/holograms/hq_icosphere.mdl")
 						local m = Matrix()
-						m:Scale(-Vector(500,500,10000)*2/12)
+						m:Scale(-Vector(5,5,100)*16384/100)
 						bubble:EnableMatrix( "RenderMultiply", m )
 						bubble:SetColor(Color(255,255,255,0))
 						bubble:SetNoDraw(true)
