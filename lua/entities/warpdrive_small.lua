@@ -26,6 +26,7 @@ function ENT:Initialize()
 		self.window = { pixelPerUnit = 150, pos = Vector(0, 0, 0) }
 		self.starPos = Vector2()		-- position of the selected star
 		self.lastScanPos = Vector2()	-- position of the ship during the last DB query
+		self.enteringPoint = Vector2()
 		self.locationText = "[Unknown location]"
 		self.distanceText = "0 pc"
 		return
@@ -149,12 +150,19 @@ net.Receive("PulpMod_WarpDrive", function(len)
 	local ent = net.ReadEntity()
 	ent.state = net.ReadFloat()
 
+	local ship = ent.parentSpaceship
 	local inHyperSpace = ent.state == PHASE_MOVING
-	ent.parentSpaceship:setInHyperSpace(inHyperSpace)
 
-	if ent.parentSpaceship == LocalPlayer():getSpaceship() then
-		toggleHyperSpace(inHyperSpace)
-	end
+	if ship then
+		ent.parentSpaceship:setInHyperSpace(inHyperSpace)
+		if inHyperSpace then
+			ent.enteringPoint = ship:getGalaxyPos()
+		end
+
+		if ent.parentSpaceship == LocalPlayer():getSpaceship() then
+			toggleHyperSpace(inHyperSpace)
+		end
+	end	
 end)
 
 
@@ -199,6 +207,19 @@ local function stencilEnd()
 	render.SetStencilReferenceValue(1)	-- Fix the holo bug with the physgun
 	render.ClearStencil()
 	render.SetStencilEnable(false)
+end
+
+local triangle = {{ x = 0, y = 0 },	{ x = 0, y = 0 }, { x = 0, y = 0 }}
+local function getTriangle(x, y, dir)
+	triangle[1].x = x + dir.x*30
+	triangle[1].y = y + dir.y*30
+
+	triangle[2].x = x - dir.y*12 - dir.x*12
+	triangle[2].y = y + dir.x*12 - dir.y*12
+
+	triangle[3].x = x + dir.y*12 - dir.x*12
+	triangle[3].y = y - dir.x*12 - dir.y*12
+	return triangle
 end
 
 -- Compute and define variables only once when possible
@@ -252,6 +273,8 @@ local BUTTON_PREV = 1
 local BUTTON_NEXT = 2
 local BUTTON_JUMP = 3
 
+local mapUp = Vector2(0, -1)
+
 function ENT:Draw()
 	self:DrawModel()
 
@@ -260,6 +283,7 @@ function ENT:Draw()
 	local camAngle = self:LocalToWorldAngles(Angle(90, 0, 0))
 	local curX, curY = getScreenCursorPos(LocalPlayer():GetEyeTrace(), camPos, scrScale, camAngle)
 	local click = 0
+	local ship = self.parentSpaceship	
 	cam.Start3D2D(camPos, camAngle, scrScale)
 		-- Draw the stars map
 		surface.SetDrawColor(black)
@@ -269,9 +293,9 @@ function ENT:Draw()
 
 		local shipx = 0
 		local shipy = 0
-		if self.parentSpaceship then
-			shipx = self.parentSpaceship:getGalaxyPos().x
-			shipy = self.parentSpaceship:getGalaxyPos().y
+		if ship then
+			shipx = ship:getGalaxyPos().x
+			shipy = ship:getGalaxyPos().y
 			self.window.pos = Vector(shipx, shipy, 0)
 		end
 
@@ -280,14 +304,29 @@ function ENT:Draw()
 		stencilEnd()
 
 		-- Warp drive status text or distance
-		if not self.parentSpaceship then
+		if not ship then
 			draw.SimpleText("WARP DRIVE OFFLINE", "WarpDriveConsole", scrCenterX, scrCenterY, Color(204, 0, 0, math.abs(math.sin(CurTime()))*255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		elseif self.starPos then
 			local coeff = self.window.pixelPerUnit/10/2
-			local line = self.starPos - self.parentSpaceship:getGalaxyPos()
+			local line = self.starPos - ship:getGalaxyPos()
+
 			surface.SetDrawColor(red)
 			surface.DrawLine(scrCenterX, scrCenterY, scrCenterX + coeff*line.x/scrScale, scrCenterY + coeff*line.y/scrScale)
 
+			if ship:isInHyperSpace() then
+				local line2 = self.enteringPoint - ship:getGalaxyPos()
+				surface.DrawLine(scrCenterX, scrCenterY, scrCenterX + coeff*line2.x/scrScale, scrCenterY + coeff*line2.y/scrScale)
+			end
+
+			-- Draw the ship on the map
+			surface.SetDrawColor(255, 255, 255, 100)
+			draw.NoTexture()
+			if line.x ~= 0 and line.y ~= 0 then
+				surface.DrawPoly(getTriangle(scrCenterX, scrCenterY, line:GetNormalized()))
+			else
+				surface.DrawPoly(getTriangle(scrCenterX, scrCenterY, mapUp))
+			end
+			
 			-- Is the drive loading ?
 			if self.state == PHASE_LOADING then
 				draw.SimpleText("WARP DRIVE CHARGING", "WarpDriveConsole", scrCenterX, scrCenterY, Color(204, 0, 0, math.abs(math.sin(CurTime()))*255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
@@ -330,8 +369,8 @@ function ENT:Draw()
 
 	-- Draw the location and distance
 	local distance = 0
-	if self.parentSpaceship then
-		distance = self.starPos:Distance(self.parentSpaceship:getGalaxyPos())
+	if ship then
+		distance = self.starPos:Distance(ship:getGalaxyPos())
 	end
 
 	cam.Start3D2D(self:GetPos() + self:GetForward()*31.8 + self:GetUp()*45 - self:GetRight()*28.5, self:LocalToWorldAngles(Angle(90, -19, 0)), titleScale)
@@ -344,9 +383,9 @@ function ENT:Draw()
 	cam.End3D2D()
 
 	-- Check for button press
-	if click > 0 and self.parentSpaceship then
-		if not self.stars or self.lastScanPos ~= self.parentSpaceship:getGalaxyPos() then 
-			self.stars = self:GetClosestStars(self.parentSpaceship:getGalaxyPos().x, self.parentSpaceship:getGalaxyPos().y, 50, self.range)
+	if click > 0 and ship and not ship:isInHyperSpace() then
+		if not self.stars or self.lastScanPos ~= ship:getGalaxyPos() then 
+			self.stars = self:GetClosestStars(ship:getGalaxyPos().x, ship:getGalaxyPos().y, 50, self.range)
 		end
 		if self.stars and #self.stars > 0 then
 			if click == BUTTON_PREV then
@@ -354,7 +393,7 @@ function ENT:Draw()
 			elseif click == BUTTON_NEXT then
 				self.starId = math.min(#self.stars, self.starId + 1)
 			elseif click == BUTTON_JUMP then
-				local distance = self.starPos:Distance(self.parentSpaceship:getGalaxyPos())
+				local distance = self.starPos:Distance(ship:getGalaxyPos())
 				if self.stars and #self.stars > 0 and distance <= self.range then
 					self.stars = nil
 					self.starId = 1
