@@ -13,15 +13,15 @@ hook.Add( "HUDPaint", "GrandEspace - HUD while in space", function()
 			local gridPos, pos, dist
 			
 			if thirdperson then
-				gridPos = ship:getGridPos() - EyeAngles():Forward()*1000 - (LocalPlayer():GetShootPos()-ship:getPocketPos())
-				dist = v:getGridPos() - gridPos
+				gridPos = ship:getGridPosLerp() - EyeAngles():Forward()*1000 - (LocalPlayer():GetShootPos()-ship:getPocketPos())
+				dist = v:getGridPosLerp() - gridPos
 				pos = ( ship:getPocketPos() + dist ):ToScreen()
 			else
-				local gridRelativePos = WorldToLocal(v:getGridPos(), v:getGridAngle(), ship:getGridPos(), ship:getGridAngle())
+				local gridRelativePos = WorldToLocal(v:getGridPosLerp(), v:getGridAngleLerp(), ship:getGridPosLerp(), ship:getGridAngleLerp())
 				pos = (ship:getPocketPos() + gridRelativePos):ToScreen()
 			end
 
-			dist = v:getGridPos() - ship:getGridPos()
+			dist = v:getGridPosLerp() - ship:getGridPosLerp()
 			draw.SimpleText( "Spaceship " .. tostring( k ), "TargetID", pos.x + 16, pos.y - 16, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER )
 			draw.SimpleText( "dist: " .. tostring( math.Round( dist:Length() ) ) .. "gu", "TargetID", pos.x + 16, pos.y + 4, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER )
 			surface.DrawCircle( pos.x, pos.y, 8, 255, 255, 255, 100 )

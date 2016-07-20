@@ -7,6 +7,8 @@ World.__index = World
 
 World.spaceships = {}
 World.spaceTime = SysTime()		-- This time is sent by the server at each frame for precise physics simulations
+World.prevSpaceTime = SysTime()	-- Used to smooth rendering
+World.renderingStart = 0		-- When did we receive info for the last time (for lerp)
 
 function World.addSpaceship( s )
 
@@ -31,8 +33,6 @@ local function simulatePhysics()
 		local velocity = v:getVelocity() + v:getAcceleration() * dt
 		v:setVelocity(Vector( math.Clamp( velocity.x, -maxSpeed, maxSpeed ), math.Clamp( velocity.y, -maxSpeed, maxSpeed ), math.Clamp( velocity.z, -maxSpeed, maxSpeed ) ))
 		v:setGridPos(v:getGridPos() + v:getVelocity() * dt)	-- Set noSync to true, don't send the position, the clients compute it
-
-		--print(v:getGridPos())
 		v.lastSimulation = World.spaceTime
 	end
 end
@@ -51,7 +51,9 @@ if CLIENT then
 
 	net.Receive("GrandEspace - Synchronize the world", function( len )
 
+		World.prevSpaceTime = World.spaceTime
 		World.spaceTime = net.ReadDouble()
+		World.renderingStart = SysTime()
 
 		if len > 64 then	-- if the table was sent by the server
 			local t = net.ReadTable()
@@ -91,7 +93,6 @@ if CLIENT then
 				if v.entities then
 					local entities = {}
 					for _,ent in pairs(v.entities) do
-						print(ent)
 						entities[#entities+1] = ent
 					end
 
@@ -106,7 +107,6 @@ if CLIENT then
 
 	-- Request sync
 	hook.Add("InitPostEntity", "PulpMod_SyncSpaceships", function()
-		print("request")
 		net.Start("GrandEspace - Synchronize the world")
 		net.SendToServer()
 	end)
@@ -143,7 +143,6 @@ else -- SERVER
 	end)
 
 	net.Receive("GrandEspace - Synchronize the world", function(len, ply)
-		print("request")
 		syncSpaceships(ply, true)
 	end)
 end

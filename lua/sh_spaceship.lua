@@ -4,6 +4,7 @@ Spaceship = {}
 Spaceship.__index = Spaceship
 
 local Vector2 = GrandEspace.Vector2
+local World = GrandEspace.World
 
 -- Utility functions
 local function vecToTbl(vec)
@@ -45,6 +46,9 @@ function Spaceship.new()
 		"galaxyPos", "gridPos", "gridAng", "velocity", 
 		"acceleration", "pocketPos", "pocketSize",
 		"entities", "inHyperSpace" }
+
+	self.prevGridPos = Vector()
+	self.prevGridAngle = Angle()
 
 	self.id = 0
 
@@ -192,6 +196,23 @@ function Spaceship:getPocketSize()
 
 end
 
+-- To use for rendering
+function Spaceship:getGridPosLerp()
+
+	local lastRenderingTime = World.spaceTime - World.prevSpaceTime
+	local dt = SysTime() - World.renderingStart
+	return LerpVector(dt/lastRenderingTime, self.prevGridPos, self.gridPos)
+
+end
+
+function Spaceship:getGridAngleLerp()
+
+	local lastRenderingTime = World.spaceTime - World.prevSpaceTime
+	local dt = SysTime() - World.renderingStart
+	return LerpAngle(dt/lastRenderingTime, self.prevGridAngle, self.gridAngle)
+
+end
+
 function Spaceship:getUpdateTable(force)
 	if force then
 		local t = { id = self.id }
@@ -230,6 +251,7 @@ end
 function Spaceship:setGridPos( pos, forceSync )
 
 	assert( pos )
+	self.prevGridPos = self.gridPos
 	if self.gridPos ~= pos then
 		self.gridPos = pos
 
@@ -237,6 +259,7 @@ function Spaceship:setGridPos( pos, forceSync )
 			self:sync("gridPos")
 		end
 	end
+
 
 end
 
@@ -308,6 +331,7 @@ end
 
 function Spaceship:setGridAngle( angle )
 
+	self.prevGridAngle = self.gridAngle
 	self.gridAngle = assert(angle)
 	self:sync("gridAngle")
 
