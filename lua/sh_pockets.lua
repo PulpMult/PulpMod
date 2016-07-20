@@ -200,7 +200,15 @@ if CLIENT then
 				local shipWorldPos, shipWorldAng = fromGridToWorld(gridPos, gridAng, pocketPos, v:getGridPosLerp(), v:getGridAngleLerp())
 
 				-- Center of the ship projected on the virtual plane
-				local projCenter, norm, fraction = util.IntersectRayWithOBB(shipWorldPos, (shootPos-shipWorldPos)*1000, pocketPos, Angle(), -k*pocketSize/2, k*pocketSize/2)
+				local projCenter
+				if shipWorldPos:DistToSqr(pocketPos) < (k*pocketSize):LengthSqr() then
+					projCenter = shipWorldPos
+				else
+					projCenter = util.IntersectRayWithOBB(shipWorldPos, (shootPos-shipWorldPos)*1000, pocketPos, Angle(), -k*pocketSize/2, k*pocketSize/2)
+				end
+
+				-- Center of the ship projected on the virtual plane
+				--local projCenter, norm, fraction = util.IntersectRayWithOBB(shipWorldPos, (shootPos-shipWorldPos)*1000, pocketPos, Angle(), -k*pocketSize/2, k*pocketSize/2)
 
 				if projCenter then
 					-- Scale factor of projection
