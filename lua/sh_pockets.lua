@@ -2,6 +2,16 @@ AddCSLuaFile()
 
 if CLIENT then 
 
+	GrandEspace.thirdPerson = false
+
+	function GrandEspace.setThirdPerson( bool )
+		GrandEspace.thirdPerson = bool
+	end
+
+	function GrandEspace.getThirdPerson()
+		return GrandEspace.thirdPerson or false
+	end
+
 	local mat = Material("spacebuild/fusion2")
 	local radius = 500
 	local radius2 = 100
@@ -17,10 +27,6 @@ if CLIENT then
 
 	local stars = {  }
 	
-
-	
-
-
 	local function drawHyperSpace( pos, a, radius )
 
 		local a2 = Angle()
@@ -96,7 +102,7 @@ if CLIENT then
 		local World = GrandEspace.World
 
 		local ship = LocalPlayer():getSpaceship()
-		local thirdPerson = LocalPlayer():getThirdPerson()
+		local thirdPerson = GrandEspace.getThirdPerson()
 		
 		if ship then
 			
@@ -250,17 +256,23 @@ if CLIENT then
 
 	hook.Add("GrandEspace - LocalPlayer changed ship", "Do not render outside the ship", function( ship, lastship )
 		
+		local tp = GrandEspace.getThirdPerson()
 		for k,v in pairs( ents.GetAll() ) do
 			
 			if IsValid(v) and not blacklist[v:GetClass()] then
 				
-				v:SetNoDraw(v.parentSpaceship ~= ship)
-
-				if thirdPerson and v.parentSpaceship == ship and v.parentSpaceship ~= nil  then
-					v:SetNoDraw(true)
+				local hide = (ship ~= nil)
+				if ship and v.parentSpaceship == ship and not tp then
+					hide = false
 				end
 
-				
+				if hide and v.lastNoDraw == nil then
+					v.lastNoDraw = v:GetNoDraw()
+					v:SetNoDraw(true)
+				elseif not hide and v.lastNoDraw ~= nil then
+					v:SetNoDraw(false)
+					v.lastNoDraw = nil
+				end
 			end
 		end
 
