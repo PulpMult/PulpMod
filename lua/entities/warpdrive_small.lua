@@ -454,7 +454,7 @@ sound.Add({
 	volume = 1,
 	level = 511,
 	pitch = 100,
-	sound = "marmotte/warpdrive_load.wav"
+	sound = "marmotte/warpdrive_load.mp3"
 })
 
 sound.Add({
@@ -463,7 +463,7 @@ sound.Add({
 	volume = 0.5,
 	level = 511,
 	pitch = 100,
-	sound = "marmotte/warpdrive_jump.wav"
+	sound = "marmotte/warpdrive_jump.mp3"
 })
 
 hook.Add("GrandEspace - LocalPlayer changed ship", "ToggleHyperSpace", function(ship, old)
