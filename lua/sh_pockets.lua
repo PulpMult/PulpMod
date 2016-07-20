@@ -116,11 +116,11 @@ if CLIENT then
 		
 			render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
 
-			
-			cam.Start3D( EyePos(), EyeAngles() )
-				
-				
+			local pos, ang = WorldToLocal(EyePos(), EyeAngles(), ship:getPocketPos(), Angle())
+			local pos2, ang2 = LocalToWorld(pos, ang, ship:getGridPosLerp(), ship:getGridAngleLerp())
 
+			cam.Start3D( EyePos(),  ang2)
+				
 				if lastHyperSpace ~= GrandEspace.inHyperSpace then
 					for i=1, 200	 do
 						stars[#stars+1] = newStar()

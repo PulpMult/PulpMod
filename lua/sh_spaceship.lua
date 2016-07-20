@@ -33,6 +33,9 @@ function Spaceship.new()
 
 	self.velocity = Vector()
 	self.acceleration = Vector()
+
+	self.angularVelocity = Angle()
+	self.angularAcceleration = Angle()
 	
 	self.bb_pos = Vector()
 	self.bb_size = Vector()
@@ -45,7 +48,8 @@ function Spaceship.new()
 	self.syncOnForce = { 
 		"galaxyPos", "gridPos", "gridAng", "velocity", 
 		"acceleration", "pocketPos", "pocketSize",
-		"entities", "inHyperSpace" }
+		"entities", "inHyperSpace",
+		"angularVelocity", "angularAcceleration" }
 
 	self.prevGridPos = Vector()
 	self.prevGridAngle = Angle()
@@ -184,9 +188,21 @@ function Spaceship:getAcceleration()
 
 end
 
+function Spaceship:getAngularAcceleration()
+
+	return self.angularAcceleration	
+
+end
+
 function Spaceship:getVelocity()
 
 	return self.velocity
+
+end
+
+function Spaceship:getAngularVelocity()
+
+	return self.angularVelocity
 
 end
 
@@ -201,15 +217,25 @@ function Spaceship:getGridPosLerp()
 
 	local lastRenderingTime = World.spaceTime - World.prevSpaceTime
 	local dt = SysTime() - World.renderingStart
-	return LerpVector(dt/lastRenderingTime, self.prevGridPos, self.gridPos)
-
+	local ratio = dt/lastRenderingTime
+	if ratio <= 1 then
+		return LerpVector(ratio, self.prevGridPos, self.gridPos)
+	else
+		return self.gridPos
+	end
 end
 
 function Spaceship:getGridAngleLerp()
 
 	local lastRenderingTime = World.spaceTime - World.prevSpaceTime
 	local dt = SysTime() - World.renderingStart
-	return LerpAngle(dt/lastRenderingTime, self.prevGridAngle, self.gridAngle)
+	local ratio = dt/lastRenderingTime
+	if ratio <= 1 then
+		return LerpAngle(dt/lastRenderingTime, self.prevGridAngle, self.gridAngle)
+	else
+		return self.gridAngle
+	end
+	
 
 end
 
@@ -303,6 +329,19 @@ function Spaceship:setAcceleration( a, forceSync )
 
 end
 
+function Spaceship:setAngularAcceleration( a, forceSync )
+
+	assert( a )
+	if self.angularAcceleration ~= a then
+		self.angularAcceleration = a
+
+		if forceSync then
+			self:sync("angularAcceleration")
+		end
+	end
+
+end
+
 function Spaceship:setVelocity( v, forceSync )
 
 	assert( v )
@@ -311,6 +350,19 @@ function Spaceship:setVelocity( v, forceSync )
 
 		if forceSync then
 			self:sync("velocity")
+		end
+	end
+
+end
+
+function Spaceship:setAngularVelocity( v, forceSync )
+
+	assert( v )
+	if self.angularVelocity ~= v then
+		self.angularVelocity = v
+
+		if forceSync then
+			self:sync("angularVelocity")
 		end
 	end
 
@@ -329,11 +381,17 @@ function Spaceship:getGridAngle( )
 
 end
 
-function Spaceship:setGridAngle( angle )
+function Spaceship:setGridAngle( angle, forceSync )
 
+	assert( angle )
 	self.prevGridAngle = self.gridAngle
-	self.gridAngle = assert(angle)
-	self:sync("gridAngle")
+	if self.gridAngle ~= angle then
+		self.gridAngle = angle
+
+		if forceSync then
+			self:sync("gridAngle")
+		end
+	end
 
 end
 

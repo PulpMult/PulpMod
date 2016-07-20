@@ -26,13 +26,20 @@ function World.addSpaceship( s )
 end
 
 local maxSpeed = 1000
+local maxAngSpeed = 25
 
 local function simulatePhysics()
 	for k, v in pairs( World.spaceships ) do
 		local dt = World.spaceTime - v.lastSimulation
 		local velocity = v:getVelocity() + v:getAcceleration() * dt
+		local angularVelocity = v:getAngularVelocity() + v:getAngularAcceleration() * dt
+
 		v:setVelocity(Vector( math.Clamp( velocity.x, -maxSpeed, maxSpeed ), math.Clamp( velocity.y, -maxSpeed, maxSpeed ), math.Clamp( velocity.z, -maxSpeed, maxSpeed ) ))
+		v:setAngularVelocity(Angle( math.Clamp( angularVelocity.x, -maxAngSpeed, maxAngSpeed ), math.Clamp( angularVelocity.y, -maxAngSpeed, maxAngSpeed ), math.Clamp( angularVelocity.z, -maxAngSpeed, maxAngSpeed ) ))
+		
 		v:setGridPos(v:getGridPos() + v:getVelocity() * dt)	-- Set noSync to true, don't send the position, the clients compute it
+		v:setGridAngle(v:getGridAngle() + v:getAngularVelocity() * dt)
+
 		v.lastSimulation = World.spaceTime
 	end
 end
@@ -79,12 +86,15 @@ if CLIENT then
 					s:setGalaxyPos( v.galaxyPos )
 				end
 
+				-- TODO: Improve this ugly thing...
 				if v.gridPos then s:setGridPos( v.gridPos ) end
 				if v.pocketPos then s:setPocketPos( v.pocketPos ) end
 				if v.pocketSize then s:setPocketSize( v.pocketSize ) end
 				if v.gridAngle then s:setGridAngle( v.gridAngle ) end
 				if v.acceleration then s:setAcceleration(v.acceleration) end
 				if v.velocity then s:setVelocity(v.velocity) end
+				if v.angularAcceleration then s:setAngularAcceleration(v.angularAcceleration) end
+				if v.angularVelocity then s:setAngularVelocity(v.angularVelocity) end
 
 				s.lastUpdate = curtime
 
