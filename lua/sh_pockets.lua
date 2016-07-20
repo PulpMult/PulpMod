@@ -114,6 +114,18 @@ if CLIENT then
 
 	local lastHyperSpace = false
 
+	hook.Add("CalcView", "MyCalcView", function(ply, pos, angles, fov, nearz, farz)
+		if LocalPlayer():getSpaceship() then
+			return { origin = pos, angles = angles, fov = fov, znear = nearz, zfar = 100000 }
+		end
+	end)
+
+	hook.Add("PreDrawOpaqueRenderables", "bla", function()
+		if LocalPlayer():getSpaceship() then
+			render.Clear(0, 0, 0, 0, true, true)
+		end
+	end)
+
 	hook.Add("PostDrawOpaqueRenderables", "GrandEspace - Render other ships & pockets", function()
 
 		local ship = LocalPlayer():getSpaceship()
@@ -175,11 +187,13 @@ if CLIENT then
 					drawHyperSpace( LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length())
 					render.DepthRange( 0, 1 ) 
 				else
-					
+					render.OverrideDepthEnable(true, false)
 					render.SetMaterial(mat)
 					render.DepthRange( 0, 0 ) 
 					render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
-					render.DepthRange( 0, 1 ) 
+					render.DepthRange( 0, 1 )
+					render.OverrideDepthEnable(true, true)
+					render.OverrideDepthEnable(false, false)
 				end
 
 			cam.End3D()	
@@ -208,56 +222,31 @@ if CLIENT then
 				gridAng = Angle()
 			end
 
-			-- TODO: IMPORTANT! This has to be improved
-			local spaceships = {}
-			for k,v in pairs(World.spaceships) do
-				spaceships[k] = v
-			end
-			table.sort(spaceships, function(a, b) 
-				return ship:getGridPosLerp():Distance(a:getGridPosLerp()) < ship:getGridPosLerp():Distance(b:getGridPosLerp())
-			end)
+			local propPos, propAng, projPropPos, profPropAng, originalPos, originalAng
 
-			for k,v in pairs(spaceships) do
+			for k,v in pairs(World.spaceships) do
 				-- Position and orientation of the ship in the world
 				local shipWorldPos, shipWorldAng = fromGridToWorld(gridPos, gridAng, pocketPos, v:getGridPosLerp(), v:getGridAngleLerp())
 
-				-- Center of the ship projected on the virtual plane
-				local projCenter
-				if shipWorldPos:DistToSqr(pocketPos) < (k*pocketSize):LengthSqr() then
-					projCenter = shipWorldPos
-				else
-					projCenter = util.IntersectRayWithOBB(shipWorldPos, (shootPos-shipWorldPos)*1000, pocketPos, Angle(), -k*pocketSize/2, k*pocketSize/2)
-				end
-
-				-- Center of the ship projected on the virtual plane
-				--local projCenter, norm, fraction = util.IntersectRayWithOBB(shipWorldPos, (shootPos-shipWorldPos)*1000, pocketPos, Angle(), -k*pocketSize/2, k*pocketSize/2)
-
-				if projCenter then
-					-- Scale factor of projection
-					local scaleDist = projCenter:Distance(shootPos)/shipWorldPos:Distance(shootPos)
-
-					if ((not thirdPerson and ship ~= v) or thirdPerson) and  ship:getGalaxyPos() == v:getGalaxyPos() then
+				if shipWorldPos then
+					if ((not thirdPerson and ship ~= v) or thirdPerson) and ship:getGalaxyPos() == v:getGalaxyPos() then
 						for _,ent in pairs(v.entities) do
 							-- Local coordinates of the prop (In the coordinates system of the ship)
-							local propPos, propAng = WorldToLocal(ent:GetPos(), ent:GetAngles(), v:getPocketPos(), Angle())
-							propPos = propPos*scaleDist
+							propPos, propAng = WorldToLocal(ent:GetPos(), ent:GetAngles(), v:getPocketPos(), Angle())
 
 							-- Coordinates of the prop after projection on the virtual plane
-							local projPropPos, projPropAng = LocalToWorld(propPos, propAng, projCenter, shipWorldAng)
+							projPropPos, projPropAng = LocalToWorld(propPos, propAng, shipWorldPos, shipWorldAng)
 
-							local originalPos = ent:GetRenderOrigin()
-							local originalAng = ent:GetRenderAngles()
-							local originalScale = ent:GetModelScale()
+							originalPos = ent:GetRenderOrigin()
+							originalAng = ent:GetRenderAngles()
 
 							ent:SetRenderOrigin(projPropPos)
 							ent:SetRenderAngles(projPropAng)
-							ent:SetModelScale(originalScale * scaleDist)
 
 							ent:DrawModel()
 
 							ent:SetRenderOrigin(originalPos)
 							ent:SetRenderAngles(originalAng)
-							ent:SetModelScale(originalScale)
 						end
 					end
 				end
