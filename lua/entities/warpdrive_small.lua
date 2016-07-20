@@ -161,6 +161,12 @@ net.Receive("PulpMod_WarpDrive", function(len)
 
 		if ent.parentSpaceship == LocalPlayer():getSpaceship() then
 			toggleHyperSpace(inHyperSpace)
+
+			if ent.state == PHASE_LOADING then
+				LocalPlayer():EmitSound("warpdrive_load")
+			elseif ent.state == PHASE_MOVING then
+				LocalPlayer():EmitSound("warpdrive_jump")
+			end
 		end
 	end	
 end)
@@ -436,10 +442,28 @@ end
 sound.Add({
 	name = "hyperspace_bg",
 	channel = CHAN_STATIC,
-	volume = 0.75,
+	volume = 1,
 	level = 511,
 	pitch = 100,
 	sound = "marmotte/hyperspace_bg.wav"
+})
+
+sound.Add({
+	name = "warpdrive_load",
+	channel = CHAN_STATIC,
+	volume = 1,
+	level = 511,
+	pitch = 100,
+	sound = "marmotte/warpdrive_load.wav"
+})
+
+sound.Add({
+	name = "warpdrive_jump",
+	channel = CHAN_STATIC,
+	volume = 0.5,
+	level = 511,
+	pitch = 100,
+	sound = "marmotte/warpdrive_jump.wav"
 })
 
 hook.Add("GrandEspace - LocalPlayer changed ship", "ToggleHyperSpace", function(ship, old)
