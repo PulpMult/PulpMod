@@ -5,10 +5,7 @@ if CLIENT then
 	GrandEspace.thirdPerson = false
 
 	function GrandEspace.setThirdPerson( bool )
-		local ply = LocalPlayer()
-		if not IsValid( ply ) then return end
-		
-		local ship = ply:getSpaceship()
+		local ship = LocalPlayer():getSpaceship()
 		if not ship then return end
 		
 		GrandEspace.thirdPerson = bool

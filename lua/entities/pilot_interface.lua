@@ -81,7 +81,6 @@ function ENT:Think()
 		acceleration = acceleration - gridAngle:Up() * speed
 	end
 	
-	gridAngle = Angle()
 	// Turning
 	if self:GetWireInputAsNumber( "PitchUp" ) > 0 then
 		angularAcceleration:RotateAroundAxis( gridAngle:Right(), degrees )
