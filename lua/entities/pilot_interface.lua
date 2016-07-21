@@ -59,10 +59,15 @@ function ENT:Think()
 	local speed = 1000
 	local degrees = 5
 	
-	local gridAngle = ship:getGridAngle()
-	local acceleration = Vector()
-	local angularAcceleration = Angle( gridAngle.x, gridAngle.y, gridAngle.z )
+	local velocity = ship:getVelocity()
+	local angVelocity = ship:getAngularVelocity()
 	
+	local acceleration = Vector()
+	local angularAcceleration = Angle()
+	
+	local gridAngle = ship:getGridAngle() - angVelocity
+	
+	// Moving
 	if self:GetWireInputAsNumber( "Forward" ) > 0 then
 		acceleration = acceleration + gridAngle:Forward() * speed
 	elseif self:GetWireInputAsNumber( "Backward" ) > 0 then
@@ -100,11 +105,7 @@ function ENT:Think()
 		angularAcceleration:RotateAroundAxis( gridAngle:Forward(), -degrees )
 	end
 	
-	angularAcceleration = angularAcceleration - gridAngle
-	
-	local velocity = ship:getVelocity()
-	local angVelocity = ship:getAngularVelocity()
-	
+	// Drag
 	if acceleration.x == 0 then
 		acceleration.x = -velocity.x
 	end
