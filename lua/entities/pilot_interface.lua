@@ -141,7 +141,6 @@ function ENT:Think()
 		end		
 	end
 	
-	self:NextThink( CurTime() )
 	return true
 end
 
