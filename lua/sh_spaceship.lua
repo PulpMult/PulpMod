@@ -378,6 +378,9 @@ end
 function Spaceship:setGridAngle( angle, forceSync )
 
 	assert( angle )
+	
+	angle:Normalize()
+	
 	self.prevGridAngle = self.gridAngle
 	if self.gridAngle ~= angle then
 		self.gridAngle = angle

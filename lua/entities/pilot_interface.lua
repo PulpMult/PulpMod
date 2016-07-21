@@ -62,10 +62,10 @@ function ENT:Think()
 	local velocity = ship:getVelocity()
 	local angVelocity = ship:getAngularVelocity()
 	
+	local gridAngle = ship:getGridAngle()
+	
 	local acceleration = Vector()
 	local angularAcceleration = Angle()
-	
-	local gridAngle = ship:getGridAngle() - angVelocity
 	
 	// Moving
 	if self:GetWireInputAsNumber( "Forward" ) > 0 then
@@ -88,21 +88,21 @@ function ENT:Think()
 	
 	// Turning
 	if self:GetWireInputAsNumber( "PitchUp" ) > 0 then
-		angularAcceleration:RotateAroundAxis( gridAngle:Right(), degrees )
+		angularAcceleration:RotateAroundAxis( angularAcceleration:Right(), degrees )
 	elseif self:GetWireInputAsNumber( "PitchDown" ) > 0 then
-		angularAcceleration:RotateAroundAxis( gridAngle:Right(), -degrees )
+		angularAcceleration:RotateAroundAxis( angularAcceleration:Right(), -degrees )
 	end
 	
 	if self:GetWireInputAsNumber( "YawLeft" ) > 0 then
-		angularAcceleration:RotateAroundAxis( gridAngle:Up(), degrees )
+		angularAcceleration:RotateAroundAxis( angularAcceleration:Up(), degrees )
 	elseif self:GetWireInputAsNumber( "YawRight" ) > 0 then
-		angularAcceleration:RotateAroundAxis( gridAngle:Up(), -degrees )
+		angularAcceleration:RotateAroundAxis( angularAcceleration:Up(), -degrees )
 	end
 	
 	if self:GetWireInputAsNumber( "RollRight" ) > 0 then
-		angularAcceleration:RotateAroundAxis( gridAngle:Forward(), degrees )
+		angularAcceleration:RotateAroundAxis( angularAcceleration:Forward(), degrees )
 	elseif self:GetWireInputAsNumber( "RollLeft" ) > 0 then
-		angularAcceleration:RotateAroundAxis( gridAngle:Forward(), -degrees )
+		angularAcceleration:RotateAroundAxis( angularAcceleration:Forward(), -degrees )
 	end
 	
 	// Drag
