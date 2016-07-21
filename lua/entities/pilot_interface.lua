@@ -36,6 +36,7 @@ function ENT:GetWireInputAsNumber( name )
 end
 
 function ENT:Think()
+	self:NextThink( CurTime() )
 	if CLIENT then
 		local ply = LocalPlayer()
 	
@@ -87,21 +88,21 @@ function ENT:Think()
 	
 	// Turning
 	if self:GetWireInputAsNumber( "PitchUp" ) > 0 then
-		angularAcceleration:RotateAroundAxis( gridAngle:Right(), degrees )
+		angularAcceleration = angularAcceleration + Angle(degrees, 0, 0)
 	elseif self:GetWireInputAsNumber( "PitchDown" ) > 0 then
-		angularAcceleration:RotateAroundAxis( gridAngle:Right(), -degrees )
+		angularAcceleration = angularAcceleration + Angle(-degrees, 0, 0)
 	end
 	
 	if self:GetWireInputAsNumber( "YawLeft" ) > 0 then
-		angularAcceleration:RotateAroundAxis( gridAngle:Up(), degrees )
+		angularAcceleration = angularAcceleration + Angle(0, degrees, 0)
 	elseif self:GetWireInputAsNumber( "YawRight" ) > 0 then
-		angularAcceleration:RotateAroundAxis( gridAngle:Up(), -degrees )
+		angularAcceleration = angularAcceleration + Angle(0, -degrees, 0)
 	end
 	
 	if self:GetWireInputAsNumber( "RollRight" ) > 0 then
-		angularAcceleration:RotateAroundAxis( gridAngle:Forward(), degrees )
+		angularAcceleration = angularAcceleration + Angle(0, 0, degrees)
 	elseif self:GetWireInputAsNumber( "RollLeft" ) > 0 then
-		angularAcceleration:RotateAroundAxis( gridAngle:Forward(), -degrees )
+		angularAcceleration = angularAcceleration + Angle(0, 0, -degrees)
 	end
 	
 	// Drag
@@ -131,7 +132,7 @@ function ENT:Think()
 	*/
 	
 	ship:setAcceleration( acceleration, true )
-	ship:setAngularVelocity( angularAcceleration, true )
+	ship:setAngularAcceleration( angularAcceleration, true )
 	
 	if not self.Inputs[ "Seat" ] then
 		if not self.Inputs[ "Seat" ].value then
