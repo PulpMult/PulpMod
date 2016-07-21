@@ -5,7 +5,23 @@ if CLIENT then
 	GrandEspace.thirdPerson = false
 
 	function GrandEspace.setThirdPerson( bool )
+		local ply = LocalPlayer()
+		if not IsValid( ply ) then return end
+		
+		local ship = ply:getSpaceship()
+		if not ship then return end
+		
 		GrandEspace.thirdPerson = bool
+		
+		if bool == true then
+			for k, v in pairs( ship.entities ) do
+				if IsValid( v ) then v:SetNoDraw( true ) end
+			end
+		else
+			for k, v in pairs( ship.entities ) do
+				if IsValid( v ) then v:SetNoDraw( false ) end
+			end
+		end
 	end
 
 	function GrandEspace.getThirdPerson()

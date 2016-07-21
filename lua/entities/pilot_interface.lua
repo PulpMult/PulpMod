@@ -23,9 +23,11 @@ function ENT:Initialize()
 		phys:Wake()
 	end
 	
-	WireLib.CreateSpecialInputs( self,
+	if not self.Inputs then
+		WireLib.CreateSpecialInputs( self,
 		{ "Forward", "Backward", "Left", "Right", "Up", "Down", "PitchUp", "PitchDown", "YawRight", "YawLeft", "RollLeft", "RollRight", "Seat" },
 		{ "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "NORMAL", "ENTITY" } )
+	end
 end
 
 function ENT:GetWireInputAsNumber( name )
@@ -79,6 +81,7 @@ function ENT:Think()
 		acceleration = acceleration - gridAngle:Up() * speed
 	end
 	
+	gridAngle = Angle()
 	// Turning
 	if self:GetWireInputAsNumber( "PitchUp" ) > 0 then
 		angularAcceleration:RotateAroundAxis( gridAngle:Right(), degrees )
@@ -86,9 +89,9 @@ function ENT:Think()
 		angularAcceleration:RotateAroundAxis( gridAngle:Right(), -degrees )
 	end
 	
-	if self:GetWireInputAsNumber( "YawRight" ) > 0 then
+	if self:GetWireInputAsNumber( "YawLeft" ) > 0 then
 		angularAcceleration:RotateAroundAxis( gridAngle:Up(), degrees )
-	elseif self:GetWireInputAsNumber( "YawLeft" ) > 0 then
+	elseif self:GetWireInputAsNumber( "YawRight" ) > 0 then
 		angularAcceleration:RotateAroundAxis( gridAngle:Up(), -degrees )
 	end
 	
