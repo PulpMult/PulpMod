@@ -137,6 +137,19 @@ function ENT:Think()
 	self:SendToClients()
 end
 
+function ENT:Draw()
+	self:DrawModel()
+	
+	if not self.parentSpaceship then return end
+	
+	local gridAngle = self.parentSpaceship:getGridAngle()
+	local scale = 10
+	
+	render.DrawLine( self:GetPos(), self:GetPos() + gridAngle:Forward() * scale, Color( 255, 0, 0 ) )
+	render.DrawLine( self:GetPos(), self:GetPos() + gridAngle:Right() * scale, Color( 0, 255, 0 ) )
+	render.DrawLine( self:GetPos(), self:GetPos() + gridAngle:Up() * scale, Color( 0, 0, 255 ) )
+end
+
 function ENT:TriggerInput( iname, value )
 	self.Inputs[ iname ].value = value
 end
