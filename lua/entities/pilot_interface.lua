@@ -61,7 +61,7 @@ function ENT:Think()
 	
 	local gridAngle = ship:getGridAngle()
 	local acceleration = Vector()
-	local angularAcceleration = Angle()
+	local angularAcceleration = Angle( gridAngle.x, gridAngle.y, gridAngle.z )
 	
 	if self:GetWireInputAsNumber( "Forward" ) > 0 then
 		acceleration = acceleration + gridAngle:Forward() * speed
@@ -99,6 +99,8 @@ function ENT:Think()
 	elseif self:GetWireInputAsNumber( "RollLeft" ) > 0 then
 		angularAcceleration:RotateAroundAxis( gridAngle:Forward(), -degrees )
 	end
+	
+	angularAcceleration = angularAcceleration - gridAngle
 	
 	local velocity = ship:getVelocity()
 	local angVelocity = ship:getAngularVelocity()
