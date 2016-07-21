@@ -129,7 +129,7 @@ if CLIENT then
 
 	hook.Add("CalcView", "MyCalcView", function(ply, pos, angles, fov, nearz, farz)
 		if LocalPlayer():getSpaceship() then
-			return { origin = pos, angles = angles, fov = fov, znear = nearz, zfar = 100000 }
+			return { origin = pos, angles = angles, fov = fov, znear = nearz, zfar = 1000000 }
 		end
 	end)
 

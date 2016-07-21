@@ -218,11 +218,9 @@ function Spaceship:getGridPosLerp()
 	local lastRenderingTime = World.spaceTime - World.prevSpaceTime
 	local dt = SysTime() - World.renderingStart
 	local ratio = dt/lastRenderingTime
-	if ratio <= 1 then
-		return LerpVector(ratio, self.prevGridPos, self.gridPos)
-	else
-		return self.gridPos
-	end
+
+	return LerpVector(ratio, self.prevGridPos, self.gridPos)
+
 end
 
 function Spaceship:getGridAngleLerp()
@@ -230,12 +228,8 @@ function Spaceship:getGridAngleLerp()
 	local lastRenderingTime = World.spaceTime - World.prevSpaceTime
 	local dt = SysTime() - World.renderingStart
 	local ratio = dt/lastRenderingTime
-	if ratio <= 1 then
-		return LerpAngle(dt/lastRenderingTime, self.prevGridAngle, self.gridAngle)
-	else
-		return self.gridAngle
-	end
-	
+
+	return LerpAngle(dt/lastRenderingTime, self.prevGridAngle, self.gridAngle)
 
 end
 
