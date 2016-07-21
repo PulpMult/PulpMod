@@ -36,6 +36,7 @@ function ENT:GetWireInputAsNumber( name )
 end
 
 function ENT:Think()
+	self:NextThink( CurTime() )
 	if CLIENT then
 		local ply = LocalPlayer()
 	
@@ -140,7 +141,6 @@ function ENT:Think()
 		end		
 	end
 	
-	self:NextThink( CurTime() )
 	return true
 end
 
