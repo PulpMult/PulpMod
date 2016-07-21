@@ -36,28 +36,27 @@ function ENT:GetWireInputAsNumber( name )
 end
 
 function ENT:Think()
-	
 	if CLIENT then
 		local ply = LocalPlayer()
 	
 		if not ply:InVehicle() then
 			GrandEspace.setThirdPerson( false )
-		return end
+		return true end
 		
-		if ( not IsValid( self.seat ) ) or ( not self.seat:IsVehicle() ) then return end
-		if ply:GetVehicle() ~= self.seat then return end
+		if ( not IsValid( self.seat ) ) or ( not self.seat:IsVehicle() ) then return true end
+		if ply:GetVehicle() ~= self.seat then return true end
 		
 		GrandEspace.setThirdPerson( self.seat:GetThirdPersonMode() )
-	return end
+	return true end
 	
-	if not self.parentSpaceship or not self.parentSpaceship.getGridAngle then return end
-	if not self.Inputs then return end
+	if not self.parentSpaceship or not self.parentSpaceship.getGridAngle then return true end
+	if not self.Inputs then return true end
 	
 	local ship = self.parentSpaceship
 	
 	// This will be later implemented into spaceship class and depend on modules or other shit.
 	local speed = 1000
-	local degrees = 5
+	local degrees = 50
 	
 	local velocity = ship:getVelocity()
 	local angVelocity = ship:getAngularVelocity()
@@ -88,21 +87,21 @@ function ENT:Think()
 	
 	// Turning
 	if self:GetWireInputAsNumber( "PitchUp" ) > 0 then
-		angularAcceleration:RotateAroundAxis( angularAcceleration:Right(), degrees )
+		angularAcceleration:RotateAroundAxis( gridAngle:Right(), degrees )
 	elseif self:GetWireInputAsNumber( "PitchDown" ) > 0 then
-		angularAcceleration:RotateAroundAxis( angularAcceleration:Right(), -degrees )
+		angularAcceleration:RotateAroundAxis( gridAngle:Right(), -degrees )
 	end
 	
 	if self:GetWireInputAsNumber( "YawLeft" ) > 0 then
-		angularAcceleration:RotateAroundAxis( angularAcceleration:Up(), degrees )
+		angularAcceleration:RotateAroundAxis( gridAngle:Up(), degrees )
 	elseif self:GetWireInputAsNumber( "YawRight" ) > 0 then
-		angularAcceleration:RotateAroundAxis( angularAcceleration:Up(), -degrees )
+		angularAcceleration:RotateAroundAxis( gridAngle:Up(), -degrees )
 	end
 	
 	if self:GetWireInputAsNumber( "RollRight" ) > 0 then
-		angularAcceleration:RotateAroundAxis( angularAcceleration:Forward(), degrees )
+		angularAcceleration:RotateAroundAxis( gridAngle:Forward(), degrees )
 	elseif self:GetWireInputAsNumber( "RollLeft" ) > 0 then
-		angularAcceleration:RotateAroundAxis( angularAcceleration:Forward(), -degrees )
+		angularAcceleration:RotateAroundAxis( gridAngle:Forward(), -degrees )
 	end
 	
 	// Drag
@@ -117,7 +116,7 @@ function ENT:Think()
 	if acceleration.z == 0 then
 		acceleration.z = -velocity.z
 	end
-	
+	/*
 	if angularAcceleration.x == 0 then
 		angularAcceleration.x = -angVelocity.x
 	end
@@ -129,15 +128,20 @@ function ENT:Think()
 	if angularAcceleration.z == 0 then
 		angularAcceleration.z = -angVelocity.z
 	end
+	*/
 	
 	ship:setAcceleration( acceleration, true )
-	ship:setAngularAcceleration( angularAcceleration, true )
+	ship:setAngularVelocity( angularAcceleration, true )
 	
-	if not self.Inputs[ "Seat" ] then return end
-	if not self.Inputs[ "Seat" ].value then return end
+	if not self.Inputs[ "Seat" ] then
+		if not self.Inputs[ "Seat" ].value then
+			self.seat = self.Inputs[ "Seat" ].value
+			self:SendToClients()
+		end		
+	end
 	
-	self.seat = self.Inputs[ "Seat" ].value
-	self:SendToClients()
+	self:NextThink( CurTime() )
+	return true
 end
 
 function ENT:Draw()

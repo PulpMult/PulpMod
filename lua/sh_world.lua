@@ -39,7 +39,7 @@ local function simulatePhysics()
 		
 		v:setGridPos(v:getGridPos() + v:getVelocity() * dt)	-- Set noSync to true, don't send the position, the clients compute it
 		v:setGridAngle(v:getGridAngle() + v:getAngularVelocity() * dt)
-
+		
 		v.lastSimulation = World.spaceTime
 	end
 end
