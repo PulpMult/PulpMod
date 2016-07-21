@@ -70,39 +70,41 @@ local defAngle = Angle()
 
 local poss, angs, shadangs, scales = {}, {}, {}, {}
 
-hook.Add("Tick", "GrandEspace - Planets", function()
-	ship = LocalPlayer():getSpaceship()
-	if not ship then return end
+hook.Add("InitPostEntity", "GrandEspace - Planets", function()
+	hook.Add("Tick", "GrandEspace - Planets", function()
+		ship = LocalPlayer():getSpaceship()
+		if not ship then return end
 
-	shipPos = ship:getGridPosLerp()
-	shipAng = ship:getGridAngleLerp()
-	pocketPos = ship:getPocketPos()
+		shipPos = ship:getGridPosLerp()
+		shipAng = ship:getGridAngleLerp()
+		pocketPos = ship:getPocketPos()
 
-	fogMode = render.GetFogMode()
-	dt = CurTime() - lastRender
-	lastRender = CurTime()
+		fogMode = render.GetFogMode()
+		dt = CurTime() - lastRender
+		lastRender = CurTime()
 
-	for k,v in pairs(planets) do
-		v.gridAngle:RotateAroundAxis(v.rotationAxis, v.rotationSpeed*dt)
+		for k,v in pairs(planets) do
+			v.gridAngle:RotateAroundAxis(v.rotationAxis, v.rotationSpeed*dt)
 
-		gridPos = v.gridPos
-		gridAngle = v.gridAngle
+			gridPos = v.gridPos
+			gridAngle = v.gridAngle
 
-		rel = gridPos - shipPos
-		l = rel:Length()
-		renderDist = min(l, maxDraw)
-		scales[k] = renderDist/l
+			rel = gridPos - shipPos
+			l = rel:Length()
+			renderDist = min(l, maxDraw)
+			scales[k] = renderDist/l
 
-		if scales[k] < 1 then
-			gridPos = shipPos + rel*scale
+			if scales[k] < 1 then
+				gridPos = shipPos + rel*scale
+			end
+
+			pos, ang= WorldToLocal(gridPos, gridAngle, shipPos, shipAng)
+			poss[k], angs[k] = LocalToWorld(pos, ang, pocketPos, defAngle)
+
+			_, shadang = WorldToLocal(gridPos, v.shadowAngle, shipPos, shipAng)
+			_, shadangs[k] = LocalToWorld(_, shadang, pocketPos, defAngle)
 		end
-
-		pos, ang= WorldToLocal(gridPos, gridAngle, shipPos, shipAng)
-		poss[k], angs[k] = LocalToWorld(pos, ang, pocketPos, defAngle)
-
-		_, shadang = WorldToLocal(gridPos, v.shadowAngle, shipPos, shipAng)
-		_, shadangs[k] = LocalToWorld(_, shadang, pocketPos, defAngle)
-	end
+	end)
 end)
 
 hook.Add("PostDrawOpaqueRenderables", "GrandEspace - Planets", function()
