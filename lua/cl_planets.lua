@@ -162,17 +162,18 @@ hook.Add("PostDrawOpaqueRenderables", "GrandEspace - Planets", function()
 			-- Draw shadow
 			dir = shadang:Up()
 			--shadoff = renderDist*0.0000019/(1-scale)
-			shadoff = 1.75
+			--shadoff = 1 + (l-v.radius/ent:GetModelRadius())*0.000000000075
+			shadoff = 1 + (l-v.radius)*0.000000001
 
 			render.SetColorMaterial()
 			render.SetColorModulation(0, 0, 0)
-
+			
 			for i,s in ipairs(shadows[k]) do
 				orpos = s:GetRenderOrigin()
 				orang = s:GetRenderAngles()
 				
 				render.SetBlend(0.75/((pow(i, 0.9))*0.92))
-				s:SetRenderOrigin(pos - dir*(i*v.radius/2000000))
+				s:SetRenderOrigin(pos - scale*dir*(i*v.radius/1000))
 				s:SetRenderAngles(shadang)
 				s:SetModelScale(scale*shadoff*v.radius/s:GetModelRadius())
 
