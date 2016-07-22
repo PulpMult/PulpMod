@@ -94,15 +94,20 @@ if CLIENT then
 		end
 
 
+		local me = LocalPlayer()
+		local angDot = 0
 		
+
+
 		for i=0, #staticStars/2-1 do
 			
+
 			s = staticStars[i*2+2]
 			vec:Set(staticStars[i*2+1])
 			vec:Mul(radius)
 			vec:Add(basePos)
 			render.DrawSprite( vec , s, s, white )
-
+			
 		end
 
 		

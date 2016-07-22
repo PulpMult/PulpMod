@@ -29,7 +29,7 @@ net.ReadVars[254] = function()
 end
 
 
-function VECTOR2.new( x, y )
+function VECTOR2.new( x, y, z )
 	local self = {}
 	setmetatable( self, VECTOR2 )
 	
@@ -47,7 +47,7 @@ local function Vector2( x, y, z )
 	z = z or 0	
 
 	if isnumber(x) and isnumber(y) and isnumber(z) then
-		return VECTOR2.new( x, y )
+		return VECTOR2.new( x, y, z )
 	elseif isvector2(x) or isvector(x) then
 		return VECTOR2.new(x.x, x.y, x.z)
 	end
