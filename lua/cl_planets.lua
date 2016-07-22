@@ -130,7 +130,7 @@ end)
 local renderMat = CreateMaterial("planet_texture", "VertexLitGeneric")
 local fogMode, ent, planetPos, planetAng, planetScale, planetDist, shadowDir, shadowAngle, shadowOffset, planetRender
 
-hook.Add("PostDrawOpaqueRenderables", "GrandEspace - Planets", function()
+hook.Add("PreDrawTranslucentRenderables", "GrandEspace - Planets", function()
 	if not ship or not LocalPlayer() then return end
 
 	fogMode = render.GetFogMode()

@@ -139,8 +139,9 @@ if CLIENT then
 		end
 	end)
 
-	hook.Add("PostDrawOpaqueRenderables", "GrandEspace - Render other ships & pockets", function()
+	local thirdPerson = GrandEspace.getThirdPerson()
 
+	hook.Add("PostDrawOpaqueRenderables", "ohohoh", function()
 		local ship = LocalPlayer():getSpaceship()
 		local thirdPerson = GrandEspace.getThirdPerson()
 
@@ -222,6 +223,12 @@ if CLIENT then
 			end
 
 		end
+	end)
+
+	hook.Add("PostDrawTranslucentRenderables", "GrandEspace - Render other ships & pockets", function()
+
+		local ship = LocalPlayer():getSpaceship()
+		local thirdPerson = GrandEspace.getThirdPerson()
 
 		if ship then 
 			local gridPos = ship:getGridPosLerp()
