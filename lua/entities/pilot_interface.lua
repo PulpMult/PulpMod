@@ -50,7 +50,7 @@ function ENT:Think()
 			end
 		end
 	else
-		if not self.parentSpaceship then return true end
+		if not self.parentSpaceship or not self.parentSpaceship.getVelocity then return true end
 		if not self.Inputs then return true end
 		
 		local ship = self.parentSpaceship
