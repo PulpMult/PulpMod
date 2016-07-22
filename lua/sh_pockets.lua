@@ -119,7 +119,7 @@ if CLIENT then
 		return LocalToWorld( a, b, pocketPos, Angle() )
 	end
 	
-	local mat = Material("materials/stars2.png")
+	local mat = Material("materials/stars.png")
 
 	local sizeMicroPocket = Vector(100,100,100) -- The size of the box around the head of the player in 3rd person
 
