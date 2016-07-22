@@ -45,7 +45,9 @@ function ENT:Think()
 		else
 			if IsValid( self.seat ) and self.seat:IsVehicle() then
 				if ply:GetVehicle() == self.seat then
-					GrandEspace.setThirdPerson( self.seat:GetThirdPersonMode() )
+					if self.seat:GetThirdPersonMode() ~= GrandEspace.getThirdPerson() then
+						GrandEspace.setThirdPerson( self.seat:GetThirdPersonMode() )
+					end
 				end	
 			end
 		end
