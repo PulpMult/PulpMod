@@ -1,0 +1,5 @@
+VertexLitGeneric
+{
+	$basetexture marmotte\planet_shadow
+	$translucent 1
+}

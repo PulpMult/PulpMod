@@ -13,7 +13,7 @@ planets["earth"] = {
 	gridPos = Vector(1000000000, 0, 0),
 	gridAngle = Angle(180, 0, 180),
 	shadowAnglele = Angle(0, 0, 95),
-	atmosphereSize = 0.004,
+	atmosphereSize = 0.006,
 	atmosphereColor = Color(152, 206, 252, 50),
 	material = Material("marmotte/earth.png"),
 	colorModulation = { 0.8, 0.8, 0.8 },
@@ -31,15 +31,10 @@ for k,v in pairs(planets) do
 	entities[k]:SetPos(Vector(0, 0, -100000000))
 	entities[k]:SetNoDraw(true)
 
-	shadows[k] = {}
-	for i = 1,10 do
-		shadows[k][i] = ClientsideModel("models/holograms/hq_hdome_thin.mdl", RENDERGROUP_OTHER)
-		shadows[k][i]:SetLOD(0)
-		shadows[k][i]:SetMaterial("models/debug/debugwhite")
-		shadows[k][i]:SetColor(Color(0, 0, 0, 100))
-		shadows[k][i]:SetPos(Vector(0, 0, -100000000))
-		shadows[k][i]:SetNoDraw(true)
-	end
+	shadows[k] = ClientsideModel("models/holograms/hq_sphere.mdl", RENDERGROUP_OTHER)
+	shadows[k]:SetLOD(0)
+	shadows[k]:SetPos(Vector(0, 0, -100000000))
+	shadows[k]:SetNoDraw(true)
 
 	planetsRender[k] = {}
 end
@@ -128,7 +123,8 @@ hook.Add("InitPostEntity", "GrandEspace - Planets", function()
 end)
 
 local renderMat = CreateMaterial("planet_texture", "VertexLitGeneric")
-local fogMode, ent, planetPos, planetAng, planetScale, planetDist, shadowDir, shadowAngle, shadowOffset, planetRender
+local shadowMat = Material("marmotte/planet_shadow")
+local fogMode, ent, planetPos, planetAng, planetScale, planetDist, shadowDir, shadowAngle, shadowOffset, planetRender, shadow
 
 hook.Add("PreDrawTranslucentRenderables", "GrandEspace - Planets", function()
 	if not ship or not LocalPlayer() then return end
@@ -140,16 +136,24 @@ hook.Add("PreDrawTranslucentRenderables", "GrandEspace - Planets", function()
 
 	for k,v in pairs(planets) do
 		if v.galaxyPos == ship:getGalaxyPos() then
-			ent = entities[k]
 			renderMat:SetTexture("$basetexture", v.material:GetTexture("$basetexture"))
-			planetRender = planetsRender[k]
 
+			planetRender = planetsRender[k]
 			planetScale = planetRender.scale
 			planetPos = planetRender.pos
 			planetAng = planetRender.ang
 			planetDist = planetRender.dist
 			shadowAngle = planetRender.shadowAngle
+			shadowDir = shadowAngle:Up()
 			
+			ent = entities[k]
+			ent:SetRenderOrigin(planetPos)
+			ent:SetRenderAngles(planetAng)
+
+			shadow = shadows[k]
+			shadow:SetRenderOrigin(planetPos)
+			shadow:SetAngles(shadowAngle)
+
 			enableStencil()
 
 			-- Draw atmosphere
@@ -160,28 +164,22 @@ hook.Add("PreDrawTranslucentRenderables", "GrandEspace - Planets", function()
 			render.SetColorModulation(v.colorModulation[1], v.colorModulation[2], v.colorModulation[3])
 			render.MaterialOverride(renderMat)
 			
-			ent:SetRenderOrigin(planetPos)
-			ent:SetRenderAngles(planetAng)
 			ent:SetModelScale(planetScale*v.radius/ent:GetModelRadius())
 			ent:DrawModel()
 
-			render.MaterialOverride()
 			switchStencil()
 
 			-- Draw shadow
-			shadowDir = shadowAngle:Up()
-			shadowOffset = 1 + (planetDist-v.radius)*0.000000001
+			render.SetColorModulation(1, 1, 1)
+			render.MaterialOverride(shadowMat)
+			render.SetBlend(0.97)
+			render.DepthRange(0, 0)
 
-			render.SetColorMaterial()
-			render.SetColorModulation(0, 0, 0)
-			
-			for i,s in ipairs(shadows[k]) do
-				render.SetBlend(0.75/((pow(i, 0.9))*0.92))
-				s:SetRenderOrigin(planetPos - planetScale*shadowDir*(i*v.radius*0.001))
-				s:SetRenderAngles(shadowAngle)
-				s:SetModelScale(planetScale*shadowOffset*v.radius/s:GetModelRadius())
-				s:DrawModel()
-			end
+			shadow:SetModelScale((1.01 + v.atmosphereSize)*planetScale*v.radius/ent:GetModelRadius())
+			shadow:DrawModel()
+
+			render.DepthRange(0, 1)
+			render.MaterialOverride()
 
 			disableStencil()
 		end
