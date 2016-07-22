@@ -1,6 +1,6 @@
 AddCSLuaFile()
 
-DEFINE_BASECLASS("base_anim")
+DEFINE_BASECLASS("base_wire_entity")
 
 ENT.PrintName = "Piloting Interface"
 ENT.Author = "Doctor Who"
@@ -13,7 +13,7 @@ function ENT:Initialize()
 	
 	if CLIENT then return end
 	
-	self:SetModel( "models/hunter/blocks/cube025x025x025.mdl" )
+	self:SetModel( "models/maxofs2d/hover_plate.mdl" )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
 	self:PhysicsInit( SOLID_VPHYSICS )
@@ -88,9 +88,9 @@ function ENT:Think()
 	
 	// Turning
 	if self:GetWireInputAsNumber( "PitchUp" ) > 0 then
-		angularAcceleration = angularAcceleration + Angle(degrees, 0, 0)
-	elseif self:GetWireInputAsNumber( "PitchDown" ) > 0 then
 		angularAcceleration = angularAcceleration + Angle(-degrees, 0, 0)
+	elseif self:GetWireInputAsNumber( "PitchDown" ) > 0 then
+		angularAcceleration = angularAcceleration + Angle(degrees, 0, 0)
 	end
 	
 	if self:GetWireInputAsNumber( "YawLeft" ) > 0 then
@@ -117,7 +117,7 @@ function ENT:Think()
 	if acceleration.z == 0 then
 		acceleration.z = -velocity.z
 	end
-	/*
+	
 	if angularAcceleration.x == 0 then
 		angularAcceleration.x = -angVelocity.x
 	end
@@ -129,7 +129,6 @@ function ENT:Think()
 	if angularAcceleration.z == 0 then
 		angularAcceleration.z = -angVelocity.z
 	end
-	*/
 	
 	ship:setAcceleration( acceleration, true )
 	ship:setAngularAcceleration( angularAcceleration, true )
@@ -147,14 +146,13 @@ end
 function ENT:Draw()
 	self:DrawModel()
 	
-	if not self.parentSpaceship then return end
+	if not self.hoverball then
+		self.hoverball = ClientsideModel( "models/maxofs2d/hover_rings.mdl" )
+		self.hoverball:SetNoDraw( true )
+	end
 	
-	local gridAngle = self.parentSpaceship:getGridAngle()
-	local scale = 10
-	
-	render.DrawLine( self:GetPos(), self:GetPos() + gridAngle:Forward() * scale, Color( 255, 0, 0 ) )
-	render.DrawLine( self:GetPos(), self:GetPos() + gridAngle:Right() * scale, Color( 0, 255, 0 ) )
-	render.DrawLine( self:GetPos(), self:GetPos() + gridAngle:Up() * scale, Color( 0, 0, 255 ) )
+	self.hoverball:SetPos( self:GetPos() + self:GetUp() * 9 )
+	self.hoverball:DrawModel()
 end
 
 function ENT:TriggerInput( iname, value )
