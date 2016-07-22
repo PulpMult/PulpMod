@@ -25,6 +25,7 @@ if CLIENT then
 		return GrandEspace.thirdPerson or false
 	end
 
+
 	local World = GrandEspace.World
 
 	local mat = Material("spacebuild/fusion2")
@@ -42,6 +43,77 @@ if CLIENT then
 	local sin = math.sin
 	local clamp = math.Clamp
 	local random = math.random
+	
+	local starTable = GrandEspace.starTable
+
+	math.randomseed(42)
+	local staticStars = {}
+	for i=1, 1000 do
+
+		local vec = Vector()
+		vec.x = random()-0.5
+		vec.y = random()-0.5
+		vec.z = random()-0.5
+		local s = random(4,128)
+
+		vec:Normalize()
+
+		staticStars[#staticStars+1] = vec
+		staticStars[#staticStars+1] = s
+
+	end
+	math.randomseed(SysTime())
+
+	local function drawStarsOnBubble( basePos, radius )
+
+
+		local st = SysTime()
+
+		render.SetMaterial( material )
+		local s = 128*8
+		local vec = Vector()
+		local norm = 0
+
+		local gp = LocalPlayer():getSpaceship():getGalaxyPos()
+		local currentPos_galaxy = -Vector(gp.x, gp.y, 0)
+
+
+		
+		for _, pos in pairs(starTable) do
+			
+			vec:Set(pos)
+			vec:Add(currentPos_galaxy)
+
+			s = 1/vec:Length()*128*4
+			vec:Normalize()
+			vec:Mul(radius)
+			vec:Add(basePos)
+
+			render.DrawSprite( vec , s, s, white )
+
+		end
+
+
+		local me = LocalPlayer()
+		local angDot = 0
+		
+
+
+		for i=0, #staticStars/2-1 do
+			
+
+			s = staticStars[i*2+2]
+			vec:Set(staticStars[i*2+1])
+			vec:Mul(radius)
+			vec:Add(basePos)
+			render.DrawSprite( vec , s, s, white )
+			
+		end
+
+		
+		--print((SysTime()-st)*1000)
+
+	end
 
 	local function newStar( pos, radius )
 
@@ -61,16 +133,16 @@ if CLIENT then
 	local ang, startPos, endPos, startTime, endTime, ratio, s, x
 	local weshAlors = Vector()
 
+
+
 	local function drawHyperSpace( pos, radius )
  	
-		render.SetColorMaterial()
-		render.DrawSphere(pos, -10000, 50, 50, Color(0,0,0,255))
 			
 		bubble:SetRenderOrigin(pos)
 		bubble:SetRenderAngles(a2)
 		bubble:SetNoDraw(true)
 
-	 	render.SetBlend( 0.2 ) 
+	 	render.SetBlend( 0.2) 
 		render.ModelMaterialOverride( mat )
 		render.SuppressEngineLighting(true)
 		bubble:DrawModel()
@@ -78,38 +150,6 @@ if CLIENT then
 		render.ModelMaterialOverride()
 		render.SetBlend( 1 )
 
-		render.SetMaterial( material )
-
-		local curtime = CurTime()
-
-		for k, star in pairs(stars) do
-			startPos = star[1]
-			endPos = star[2]
-			startTime = star[3]
-			endTime = star[4]
-
-			ratio = (curtime-startTime)/(endTime-startTime)
-			
-			if ratio >= 2 then
-				stars[k] =  newStar(LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length() )
-			end
-
-			if ratio > 0 then
-
-				s = 256/(endTime - startTime)
-				white.a = clamp(s*2,0,255)
-
-				-- Avoids creating a vector for each of the star
-				weshAlors.x =  startPos.x * (1-ratio) + endPos.x * ratio
-				weshAlors.y =  startPos.y * (1-ratio) + endPos.y * ratio
-				weshAlors.z =  startPos.z * (1-ratio) + endPos.z * ratio
-
-				render.DrawSprite( weshAlors, s, s, white )
-			end
-		
-		end
-
-		render.SetMaterial( material ) 
 
 	end
 
@@ -197,20 +237,27 @@ if CLIENT then
 					
 					render.SetColorMaterial()
 					render.DepthRange( 0, 0 ) 
-					render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
-					drawHyperSpace( LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length())
-					render.DepthRange( 0, 1 ) 
+					render.DrawSphere( EyePos(), -16384, 50, 50, Color(0,0,0,255), false)
+					drawStarsOnBubble( EyePos(), 16384)
+					
 				else
 					render.OverrideDepthEnable(true, false)
-					render.SetMaterial(mat)
+					render.SetColorMaterial()
 					render.DepthRange( 0, 0 ) 
-					render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
+					render.DrawSphere( EyePos(), -16384, 50, 50, Color(0,0,0,255), false)
+					drawStarsOnBubble(EyePos(), 16384)
 					render.DepthRange( 0, 1 )
-					render.OverrideDepthEnable(true, true)
 					render.OverrideDepthEnable(false, false)
 				end
 
 			cam.End3D()	
+
+			if LocalPlayer():getSpaceship() and GrandEspace.inHyperSpace then
+				
+				drawHyperSpace( LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length())
+				render.DepthRange( 0, 1 ) 
+			
+			end
 		
 			render.SetStencilReferenceValue(1)	-- Fix the holo bug with the physgun
 			render.ClearStencil()
