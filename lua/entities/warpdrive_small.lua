@@ -33,7 +33,7 @@ function ENT:Initialize()
 	end
 
 	-- SHARED
-	self.loading = 10		-- seconds
+	self.loading = 1		-- seconds
 	self.speed = 0.02/66		-- parsec/tick
 	self.state = PHASE_IDLE
 
@@ -86,6 +86,10 @@ if SERVER then
 
 				ent:SetState(PHASE_MOVING)
 				ent.parentSpaceship:setInHyperSpace(true)
+
+				local direction = pos - ent.parentSpaceship:getGalaxyPos()
+				local a = Vector(direction.x, direction.y, direction.z)
+				ent.parentSpaceship:setGridAngle( a:Angle(), true )
 
 				-- ... then, move the ship
 				local timername = "warp_" .. ent:EntIndex()

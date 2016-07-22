@@ -35,18 +35,21 @@ function VECTOR2.new( x, y )
 	
 	self.x = x or 0
 	self.y = y or 0
+	self.z = z or 0
 	
 	return self
 end
 
-local function Vector2( x, y )
+local function Vector2( x, y, z )
 
 	x = x or 0
 	y = y or 0	
-	if isnumber(x) and isnumber(y) then
+	z = z or 0	
+
+	if isnumber(x) and isnumber(y) and isnumber(z) then
 		return VECTOR2.new( x, y )
 	elseif isvector2(x) or isvector(x) then
-		return VECTOR2.new(x.x, x.y)
+		return VECTOR2.new(x.x, x.y, x.z)
 	end
 end
 GrandEspace.Vector2 = Vector2
@@ -55,27 +58,29 @@ function net.WriteVector2( v )
 	assert(isvector2(v))
 	net.WriteDouble(v.x)
 	net.WriteDouble(v.y)
+	net.WriteDouble(v.z)
 end
 
 function net.ReadVector2( )
 	local x = net.ReadDouble()
 	local y = net.ReadDouble()
-	return Vector2(x,y)
+	local z = net.ReadDouble()
+	return Vector2(x,y,z)
 end
 
 
 
 
 function VECTOR2:__tostring()
-	return tostring(self.x) .. " " .. tostring(self.y)
+	return tostring(self.x) .. " " .. tostring(self.y) .. " " .. tostring(self.z)
 end
 
 function VECTOR2.__unm( self )
-	return Vector2( -self.x, -self.y )
+	return Vector2( -self.x, -self.y, -self.z )
 end
 
 function VECTOR2.__add( a1, a2 )
-	return Vector2( a1.x + a2.x, a1.y + a2.y )
+	return Vector2( a1.x + a2.x, a1.y + a2.y, a1.z + a2.z )
 end
 
 function VECTOR2.__sub( a1, a2 )
@@ -89,7 +94,7 @@ function VECTOR2.__mul( a1, a2 )
 	if not isnumber(a1) or not isvector2(a2) then
 		error("VECTOR2 can only be multiplied by a number.")
 	end 
-	return Vector2( a2.x*a1, a2.y*a1 )
+	return Vector2( a2.x*a1, a2.y*a1, a2.z*a1 )
 end
 
 function VECTOR2.__div( a1, a2 )
@@ -100,11 +105,11 @@ function VECTOR2.__div( a1, a2 )
 end
 
 function VECTOR2.__eq( a1, a2 )
-	return a1.x == a2.x and a1.y == a2.y
+	return a1.x == a2.x and a1.y == a2.y and a1.z == a2.z
 end
 
 function VECTOR2:LengthSqr()
-	return self.x * self.x + self.y * self.y
+	return self.x * self.x + self.y * self.y + self.z * self.z
 end
 
 function VECTOR2:Length()
@@ -119,6 +124,7 @@ end
 function VECTOR2:Set( a )
 	self.x = a.x
 	self.y = a.y 
+	self.z = a.z
 end
 
 function VECTOR2:GetNormalized( )
