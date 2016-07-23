@@ -16,8 +16,8 @@ local function addCSLuaFileRecursive( path )
 
 	local f, d = file.Find( path .. "*", "LUA")
 	for k,v in pairs(f) do
-		local prefix = string.sub(v,1,2)
-		if prefix == "sh" or prefix == "cl" then
+		local prefix = string.sub(v,1,3)
+		if prefix == "sh_" or prefix == "cl_" then
 			print(" - " .. path .. v)
 			AddCSLuaFile(path..v)
 		end
