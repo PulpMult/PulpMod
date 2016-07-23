@@ -27,7 +27,7 @@ if CLIENT then
 
 	local World = GrandEspace.World
 
-	local mat = Material("spacebuild/fusion2")
+	local mat = Material("warp")
 	local radius = 500
 	local radius2 = 100
 	local maxDuration = 10
