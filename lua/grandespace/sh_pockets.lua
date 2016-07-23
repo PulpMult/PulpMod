@@ -4,106 +4,11 @@ if CLIENT then
 
 	local World = GrandEspace.World
 
-	local mat = Material("warp")
-	local radius = 500
-	local radius2 = 100
-	local maxDuration = 10
-	local material = Material( "sprites/light_ignorez" )
-	local white = Color( 255, 255, 255, 200 )
-
-	local a2 = Angle(90,0,0)
-	local forward = Vector(1,0,0)
-	local right = Vector(0,1,0)
-	local up = Vector(0,0,1)
-	local cos = math.cos
-	local sin = math.sin
-	local clamp = math.Clamp
-	local random = math.random
-
-	local function newStar( pos, radius )
-
-		local startPos0 = pos + forward*radius*20
-
-		local ang = random(0,360)
-		local x = cos(ang) * up +  sin(ang) * right
-		local startPos = startPos0 + radius/5*x
-		local endPos = pos + radius * x
-
-		local st = CurTime() - random()*maxDuration	
-		return {startPos, endPos, st , st + random()*maxDuration}
-	end
-
-	local stars = {  }
-	
-	local ang, startPos, endPos, startTime, endTime, ratio, s, x
-	local weshAlors = Vector()
-
-	local function drawHyperSpace( pos, radius )
- 	
-		render.SetColorMaterial()
-		render.DrawSphere(pos, -10000, 50, 50, Color(0,0,0,255))
-			
-		bubble:SetRenderOrigin(pos)
-		bubble:SetRenderAngles(a2)
-		bubble:SetNoDraw(true)
-
-	 	render.SetBlend( 0.2 ) 
-		render.ModelMaterialOverride( mat )
-		render.SuppressEngineLighting(true)
-		bubble:DrawModel()
-		render.SuppressEngineLighting(false)
-		render.ModelMaterialOverride()
-		render.SetBlend( 1 )
-
-		render.SetMaterial( material )
-
-		local curtime = CurTime()
-
-		for k, star in pairs(stars) do
-			startPos = star[1]
-			endPos = star[2]
-			startTime = star[3]
-			endTime = star[4]
-
-			ratio = (curtime-startTime)/(endTime-startTime)
-			
-			if ratio >= 2 then
-				stars[k] =  newStar(LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length() )
-			end
-
-			if ratio > 0 then
-
-				s = 256/(endTime - startTime)
-				white.a = clamp(s*2,0,255)
-
-				-- Avoids creating a vector for each of the star
-				weshAlors.x =  startPos.x * (1-ratio) + endPos.x * ratio
-				weshAlors.y =  startPos.y * (1-ratio) + endPos.y * ratio
-				weshAlors.z =  startPos.z * (1-ratio) + endPos.z * ratio
-
-				render.DrawSprite( weshAlors, s, s, white )
-			end
-		
-		end
-
-		render.SetMaterial( material ) 
-
-	end
-
 	local function fromGridToWorld( gridPos, gridAngle, pocketPos, pos, ang )
-
 		local a,b = WorldToLocal( pos or Vector(), ang or Vector(), gridPos, gridAngle )
 		return LocalToWorld( a, b, pocketPos, Angle() )
 	end
 	
-	local mat = Material("materials/stars.png")
-
-	local sizeMicroPocket = Vector(100,100,100) -- The size of the box around the head of the player in 3rd person
-
-	local old = {}
-
-	local lastHyperSpace = false
-
 	hook.Add("CalcView", "MyCalcView", function(ply, pos, angles, fov, nearz, farz)
 		if LocalPlayer():getSpaceship() then
 			return { origin = pos, angles = angles, fov = fov, znear = nearz, zfar = 1000000 }
@@ -116,12 +21,9 @@ if CLIENT then
 		end
 	end)
 
-	local thirdPerson = GrandEspace.getThirdPerson()
-
 	hook.Add("PostDrawOpaqueRenderables", "ohohoh", function()
 		local ship = LocalPlayer():getSpaceship()
-		local thirdPerson = GrandEspace.getThirdPerson()
-
+	
 		if ship then
 			
 			render.SetColorMaterial()
@@ -140,55 +42,8 @@ if CLIENT then
 		
 			render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
 
-			local pos, ang = WorldToLocal(EyePos(), EyeAngles(), ship:getPocketPos(), Angle())
-			local pos2, ang2 = LocalToWorld(pos, ang, ship:getGridPosLerp(), ship:getGridAngleLerp())
+			hook.Call("GrandEspace - Draw space around ships", {})
 
-			cam.Start3D( EyePos(),  ang2)
-				
-				if lastHyperSpace ~= GrandEspace.inHyperSpace then
-
-					for i=1, 500	 do
-						stars[i] = newStar(LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length() )
-					end
-					lastHyperSpace = GrandEspace.inHyperSpace
-
-
-					if GrandEspace.inHyperSpace and not bubble then
-						bubble = ClientsideModel("models/holograms/hq_icosphere.mdl")
-						local m = Matrix()
-						m:Scale(-Vector(5,5,100)*16384/100)
-						bubble:EnableMatrix( "RenderMultiply", m )
-						bubble:SetColor(Color(255,255,255,0))
-						bubble:SetNoDraw(true)
-					end
-					
-					if not GrandEspace.inHyperSpace and bubble then
-						bubble:Remove()
-						bubble = nil
-					end
-
-
-				end
-
-				if LocalPlayer():getSpaceship() and GrandEspace.inHyperSpace then
-					
-					render.SetColorMaterial()
-					render.DepthRange( 0, 0 ) 
-					render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
-					drawHyperSpace( LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length())
-					render.DepthRange( 0, 1 ) 
-				else
-					render.OverrideDepthEnable(true, false)
-					render.SetMaterial(mat)
-					render.DepthRange( 0, 0 ) 
-					render.DrawSphere( EyePos(), -16384, 50, 50, Color(255,255,255,255), false)
-					render.DepthRange( 0, 1 )
-					render.OverrideDepthEnable(true, true)
-					render.OverrideDepthEnable(false, false)
-				end
-
-			cam.End3D()	
-		
 			render.SetStencilReferenceValue(1)	-- Fix the holo bug with the physgun
 			render.ClearStencil()
 			render.SetStencilEnable(false)
@@ -254,10 +109,8 @@ if CLIENT then
 	local blacklist = { player=true, viewmodel=true, physgun_beam=true}
 	blacklist["class C_BaseFlex"] = true
 
+	function GrandEspace.refreshEntitiesVisibility( ship )
 
-
-	hook.Add("GrandEspace - LocalPlayer changed ship", "Do not render outside the ship", function( ship, lastship )
-		
 		local tp = GrandEspace.getThirdPerson()
 		for k,v in pairs( ents.GetAll() ) do
 			
@@ -278,7 +131,12 @@ if CLIENT then
 			end
 		end
 
+	end
+
+	hook.Add("GrandEspace - LocalPlayer changed ship", "Do not render outside the ship", function( ship, lastship )
+		GrandEspace.refreshEntitiesVisibility( ship )
 	end)
+
 	
 else
 	local pocket = {}

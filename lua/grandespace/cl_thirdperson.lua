@@ -15,6 +15,8 @@ function GrandEspace.setThirdPerson( bool )
 			if IsValid( v ) then v:SetNoDraw( false ) end
 		end
 	end
+	
+	--GrandEspace.refreshEntitiesVisibility( ship ) TODO: replace code above with this function.
 end
 
 function GrandEspace.getThirdPerson()
