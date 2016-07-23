@@ -28,7 +28,7 @@ if CLIENT then
 
 	local World = GrandEspace.World
 
-	local mat = Material("spacebuild/fusion2")
+	local mat = Material("warp")
 	local radius = 500
 	local radius2 = 100
 	local maxDuration = 10
@@ -159,7 +159,7 @@ if CLIENT then
 		return LocalToWorld( a, b, pocketPos, Angle() )
 	end
 	
-	local mat = Material("materials/stars2.png")
+	local mat = Material("materials/stars.png")
 
 	local sizeMicroPocket = Vector(100,100,100) -- The size of the box around the head of the player in 3rd person
 
