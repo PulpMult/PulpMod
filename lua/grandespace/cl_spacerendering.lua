@@ -27,7 +27,6 @@ end
 
 local function drawHyperSpace( pos, radius )
 	
-
 	-- Draw the hyperspace bubble (blue thing)
 	bubble:SetRenderOrigin(pos)
 	bubble:SetRenderAngles(angBubble)
@@ -63,7 +62,7 @@ local function drawHyperSpace( pos, radius )
 
 		if ratio > 0 then
 
-			s = 256/(endTime - startTime)
+			s = 128/(endTime - startTime)
 			starColor.a = math.Clamp(s*2,0,255)
 
 			-- Avoids creating a vector for each of the star 
@@ -75,12 +74,8 @@ local function drawHyperSpace( pos, radius )
 
 			-- does the same thing as LerpVector: vec1 = startPos * (1-ratio) + endPos * ratio
 			render.DrawSprite( vec1, s, s, starColor )
-
 		end
-	
 	end
-
-
 end
 
 hook.Add("GrandEspace - Draw space around ships", "DrawSpace&Hyperspace", function()
