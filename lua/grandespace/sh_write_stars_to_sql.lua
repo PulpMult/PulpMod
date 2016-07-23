@@ -5,9 +5,10 @@ GrandEspace.sqlStarTable = "GrandEspace_stars"
 local TABLE_NAME = GrandEspace.sqlStarTable
 
 if sql.TableExists(TABLE_NAME) then
-	print("The star table already exists.")
 	return
 end
+
+print("The star table does not seem to exist... Creating it.")
 
 local startTime = SysTime() 
 
