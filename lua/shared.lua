@@ -1,7 +1,5 @@
 AddCSLuaFile()
 
-GrandEspace = {}
-
 include("sh_vector2.lua")
 include("sh_world.lua")
 include("sh_player_functions.lua")
