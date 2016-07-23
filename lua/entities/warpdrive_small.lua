@@ -56,6 +56,7 @@ end
 
 function ENT:SetState(state)
 	self.state = state
+	
 	if SERVER then
 		net.Start("PulpMod_WarpDrive")
 			net.WriteEntity(self)
@@ -158,6 +159,10 @@ net.Receive("PulpMod_WarpDrive", function(len)
 
 	local ship = ent.parentSpaceship
 	local inHyperSpace = ent.state == PHASE_MOVING
+	
+	if ent.state == PHASE_IDLE then
+		LocalPlayer():EmitSound( "warpdrive_boom" )
+	end
 
 	if ship then
 		ent.parentSpaceship:setInHyperSpace(inHyperSpace)
@@ -472,6 +477,15 @@ sound.Add({
 	level = 511,
 	pitch = 100,
 	sound = "marmotte/warpdrive_jump.mp3"
+})
+
+sound.Add({
+	name = "warpdrive_boom",
+	channel = CHAN_STATIC,
+	volume = 1,
+	level = 511,
+	pitch = 100,
+	sound = "marmotte/warpdrive_boom.mp3"
 })
 
 hook.Add("GrandEspace - LocalPlayer changed ship", "ToggleHyperSpace", function(ship, old)
