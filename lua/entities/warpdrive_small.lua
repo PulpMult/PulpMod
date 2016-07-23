@@ -21,7 +21,7 @@ function ENT:Initialize()
 		self.lastClick = CurTime()
 		self.lastQuery = CurTime()
 		self.stars = nil			-- closest, reachable stars
-		self.range = 10				-- jump range in parsec
+		self.range = 2				-- jump range in parsec
 		self.starId = 1
 		self.window = { pixelPerUnit = 150, pos = Vector(0, 0, 0) }
 		self.starPos = Vector2()		-- position of the selected star
@@ -33,8 +33,8 @@ function ENT:Initialize()
 	end
 
 	-- SHARED
-	self.loading = 1		-- seconds
-	self.speed = 0.5/66		-- parsec/tick
+	self.loading = 10		-- seconds
+	self.speed = 0.02/66		-- parsec/tick
 	self.state = PHASE_IDLE
 
 	self:SetModel("models/props_combine/combine_intmonitor003.mdl")
@@ -78,21 +78,15 @@ if SERVER then
 			ent.traveling = true
 
 			local pos = net.ReadVector2()
-			print(pos,"salut")
 
 			ent:SetState(PHASE_LOADING)
 
 			-- First, load the warp drive...
 			timer.Simple(ent.loading, function()
-
 				if not IsValid(ent) then return end
 
 				ent:SetState(PHASE_MOVING)
 				ent.parentSpaceship:setInHyperSpace(true)
-
-				local direction = pos - ent.parentSpaceship:getGalaxyPos()
-				local a = Vector(direction.x, direction.y, direction.z)
-				ent.parentSpaceship:setGridAngle( a:Angle(), true )
 
 				-- ... then, move the ship
 				local timername = "warp_" .. ent:EntIndex()
@@ -402,7 +396,7 @@ function ENT:Draw()
 	-- Check for button press
 	if click > 0 and ship and not ship:isInHyperSpace() then
 		if not self.stars or self.lastScanPos ~= ship:getGalaxyPos() then 
-			self.stars = self:GetClosestStars(ship:getGalaxyPos().x, ship:getGalaxyPos().y, ship:getGalaxyPos().z, 50, self.range)
+			self.stars = self:GetClosestStars(ship:getGalaxyPos().x, ship:getGalaxyPos().y, 50, self.range)
 		end
 		if self.stars and #self.stars > 0 then
 			if click == BUTTON_PREV then
@@ -425,8 +419,6 @@ function ENT:Draw()
 			if self.stars and #self.stars > 0 then
 				self.starPos.x = self.stars[self.starId].x
 				self.starPos.y = self.stars[self.starId].y
-				self.starPos.z = self.stars[self.starId].z
-
 				--self.locationText = "[Star " .. self.stars[self.starId].id .. "]"
 				self.locationText = "[" .. GrandEspace.getStarName(self.stars[self.starId].id) .. " System]"
 			end
@@ -441,10 +433,10 @@ function ENT:IsClicking()
 	end
 end
 
-function ENT:GetClosestStars(x, y, z, count, range)
+function ENT:GetClosestStars(x, y, count, range)
 	local result = nil
 	if CurTime() - self.lastQuery > 0.5 then
-		result = sql.Query("SELECT * FROM " .. GrandEspace.sqlStarTable .. " WHERE ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))+(Z-(" .. z .. "))*(Z-(" .. z .. "))) <= " .. math.pow(range,2) .. " ORDER BY ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))+(Z-(" .. z .. "))*(Z-(" .. z .. "))) LIMIT " .. count .. ";")
+		result = sql.Query("SELECT * FROM " .. GrandEspace.sqlStarTable .. " WHERE ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))) <= " .. math.pow(range,2) .. " ORDER BY ((X-(" .. x .. "))*(X-(" .. x .. "))+(Y-(" .. y .. "))*(Y-(" .. y .. "))) LIMIT " .. count .. ";")
 		self.lastQuery = CurTime()
 		self.lastScanPos = Vector2(x, y)
 	end
