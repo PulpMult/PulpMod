@@ -94,6 +94,7 @@ if CLIENT then
 
 							ent:SetRenderOrigin(projPropPos)
 							ent:SetRenderAngles(projPropAng)
+							ent:SetupBones()
 
 							ent:DrawModel()
 
