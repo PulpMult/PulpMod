@@ -110,7 +110,7 @@ hook.Add("GrandEspace - Draw space around ships", "DrawSpace&Hyperspace", functi
 	render.OverrideDepthEnable(true, false)
 	render.DepthRange( 0, 0 ) 
 	
-	if GrandEspace.getThirdPerson() then ang2 = Angle() end
+	//if GrandEspace.getThirdPerson() then ang2 = Angle() end -- That ain't solving anything.
 	
 	cam.Start3D( EyePos(),  ang2)
 		if LocalPlayer():getSpaceship() and GrandEspace.inHyperSpace then
