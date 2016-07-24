@@ -115,6 +115,24 @@ function Spaceship:getEntities()
 
 end
 
+function Spaceship:changedModule()
+
+	local modules = {}
+
+	for k,v in pairs(self.entities) do
+		if GrandEspace.isModuleReceptacle(v) then
+			table.Add(modules, v:getModules())
+		end
+	end
+
+	for k,v in pairs(self.entities) do
+		if v.applyModules then
+			v:applyModules(modules)
+		end
+	end
+
+end
+
 function Spaceship:setEntities( e )
 
 	assert( e and istable(e) )
@@ -131,6 +149,7 @@ function Spaceship:setEntities( e )
 			break
 		end
 	end
+
 
 	for k,v in pairs(e) do
 
@@ -158,6 +177,10 @@ function Spaceship:setEntities( e )
 	self.entities = entities
 
 	self:sync("entities")
+
+	if SERVER then
+		self:changedModule()
+	end
 end
 
 function Spaceship:getAABB()

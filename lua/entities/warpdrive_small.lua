@@ -13,6 +13,21 @@ local PHASE_IDLE = 1
 local PHASE_LOADING = 2
 local PHASE_MOVING = 3
 
+function ENT:applyModules( mod )
+
+	local range = 2
+	
+	for k,v in pairs(mod) do
+		if v.moduleCategory == "WarpDrive" then
+			if v.moduleType == "ExtendedJump" then
+				range = range + v.warpRadius
+			end
+		end
+	end
+
+	self:SetNWInt("warprange", range)
+end
+
 function ENT:Initialize()
 
 	Vector2 = GrandEspace.Vector2
@@ -21,7 +36,6 @@ function ENT:Initialize()
 		self.lastClick = CurTime()
 		self.lastQuery = CurTime()
 		self.stars = nil			-- closest, reachable stars
-		self.range = 2				-- jump range in parsec
 		self.starId = 1
 		self.window = { pixelPerUnit = 150, pos = Vector(0, 0, 0) }
 		self.starPos = Vector2()		-- position of the selected star
@@ -115,6 +129,8 @@ if SERVER then
 	end)
 	return
 end
+
+
 
 -- CLIENT
 surface.CreateFont("WarpDriveConsole", {
@@ -396,7 +412,7 @@ function ENT:Draw()
 	-- Check for button press
 	if click > 0 and ship and not ship:isInHyperSpace() then
 		if not self.stars or self.lastScanPos ~= ship:getGalaxyPos() then 
-			self.stars = self:GetClosestStars(ship:getGalaxyPos().x, ship:getGalaxyPos().y, 50, self.range)
+			self.stars = self:GetClosestStars(ship:getGalaxyPos().x, ship:getGalaxyPos().y, 50, self:GetNWInt("warprange"))
 		end
 		if self.stars and #self.stars > 0 then
 			if click == BUTTON_PREV then
@@ -405,7 +421,7 @@ function ENT:Draw()
 				self.starId = math.min(#self.stars, self.starId + 1)
 			elseif click == BUTTON_JUMP then
 				local distance = self.starPos:Distance(ship:getGalaxyPos())
-				if self.stars and #self.stars > 0 and distance <= self.range then
+				if self.stars and #self.stars > 0 and distance <= self:GetNWInt("warprange") then
 					self.stars = nil
 					self.starId = 1
 
