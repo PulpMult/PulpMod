@@ -16,16 +16,23 @@ local PHASE_MOVING = 3
 function ENT:applyModules( mod )
 
 	local range = 2
+	local loading = 10
 	
 	for k,v in pairs(mod) do
+
 		if v.moduleCategory == "WarpDrive" then
+
 			if v.moduleType == "ExtendedJump" then
 				range = range + v.warpRadius
+
+			elseif v.moduleType == "ReducedCooldown" then
+				loading = math.max(0, loading - v.reduceCooldown)
 			end
 		end
 	end
 
 	self:SetNWInt("warprange", range)
+	self:SetNWInt("warploading", loading)
 end
 
 function ENT:Initialize()
@@ -47,7 +54,7 @@ function ENT:Initialize()
 	end
 
 	-- SHARED
-	self.loading = 10		-- seconds
+	self:SetNWInt("warploading",10)
 	self.speed = 0.02/66		-- parsec/tick
 	self.state = PHASE_IDLE
 
@@ -96,7 +103,7 @@ if SERVER then
 			ent:SetState(PHASE_LOADING)
 
 			-- First, load the warp drive...
-			timer.Simple(ent.loading, function()
+			timer.Simple(ent:GetNWInt("warploading"), function()
 				if not IsValid(ent) then return end
 
 				ent:SetState(PHASE_MOVING)
