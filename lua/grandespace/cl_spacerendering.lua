@@ -1,6 +1,6 @@
 local math = math
 
-local warpMaterial = Material("warp")
+local warpMaterial = Material("spacebuild/fusion2") -- Temp, till I get the new material done.
 local starMaterial = Material( "sprites/light_ignorez" )
 local backgroundMaterial = Material("materials/stars.png")
 local bubble
@@ -26,7 +26,6 @@ local function newStar( pos, radius )
 end
 
 local function drawHyperSpace( pos, radius )
-	
 	-- Draw the hyperspace bubble (blue thing)
 	bubble:SetRenderOrigin(pos)
 	bubble:SetRenderAngles(angBubble)
@@ -110,7 +109,9 @@ hook.Add("GrandEspace - Draw space around ships", "DrawSpace&Hyperspace", functi
 
 	render.OverrideDepthEnable(true, false)
 	render.DepthRange( 0, 0 ) 
-
+	
+	if GrandEspace.getThirdPerson() then ang2 = Angle() end
+	
 	cam.Start3D( EyePos(),  ang2)
 		if LocalPlayer():getSpaceship() and GrandEspace.inHyperSpace then
 			render.SetColorMaterial()
