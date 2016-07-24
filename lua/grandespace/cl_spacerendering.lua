@@ -115,12 +115,15 @@ hook.Add("GrandEspace - Draw space around ships", "DrawSpace&Hyperspace", functi
 		if LocalPlayer():getSpaceship() and GrandEspace.inHyperSpace then
 			render.SetColorMaterial()
 			render.DrawSphere( EyePos(), -16384, 50, 50, black, false)
-			drawHyperSpace( LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length())
 		else
 			render.SetMaterial( backgroundMaterial )
 			render.DrawSphere( EyePos(), -16384, 50, 50, white, false)
 		end
 	cam.End3D()	
+
+	if LocalPlayer():getSpaceship() and GrandEspace.inHyperSpace then
+		drawHyperSpace( LocalPlayer():getSpaceship():getPocketPos(), LocalPlayer():getSpaceship():getPocketSize():Length())
+	end
 
 	render.DepthRange( 0, 1 )
 	render.OverrideDepthEnable(false, false)
