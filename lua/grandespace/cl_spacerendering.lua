@@ -1,6 +1,6 @@
 local math = math
 
-local warpMaterial = Material("spacebuild/fusion2") -- Temp, till I get the new material done.
+local warpMaterial = Material("grandespace/warp") -- Temp, till I get the new material done.
 local starMaterial = Material( "sprites/light_ignorez" )
 local backgroundMaterial = Material("materials/stars.png")
 local bubble
@@ -9,7 +9,7 @@ local black = Color(0,0,0,255)
 local starColor = Color(255,255,255,200)
 local maxDuration = 10
 local stars = {}
-local angBubble = Angle(90,0,0)
+local angBubble = Angle(270,0,0)
 local lastHyperSpace
 
 local function newStar( pos, radius )
