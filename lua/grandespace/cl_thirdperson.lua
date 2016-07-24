@@ -6,17 +6,7 @@ function GrandEspace.setThirdPerson( bool )
 	
 	GrandEspace.thirdPerson = bool
 	
-	if bool == true then
-		for k, v in pairs( ship.entities ) do
-			if IsValid( v ) then v:SetNoDraw( true ) end
-		end
-	else
-		for k, v in pairs( ship.entities ) do
-			if IsValid( v ) then v:SetNoDraw( false ) end
-		end
-	end
-	
-	--GrandEspace.refreshEntitiesVisibility( ship ) TODO: replace code above with this function.
+	GrandEspace.refreshEntitiesVisibility( ship )
 end
 
 function GrandEspace.getThirdPerson()

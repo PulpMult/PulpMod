@@ -33,8 +33,8 @@ local function simulatePhysics()
 		local dt = World.spaceTime - v.lastSimulation
 		local velocity = v:getVelocity() + v:getAcceleration() * dt
 		local angularVelocity = v:getAngularVelocity() + v:getAngularAcceleration() * dt
-
-		v:setVelocity(Vector( math.Clamp( velocity.x, -maxSpeed, maxSpeed ), math.Clamp( velocity.y, -maxSpeed, maxSpeed ), math.Clamp( velocity.z, -maxSpeed, maxSpeed ) ))
+		
+		v:setVelocity( velocity:GetNormalized() * math.min( velocity:Length(), maxSpeed ) )
 		v:setAngularVelocity(Angle( math.Clamp( angularVelocity.x, -maxAngSpeed, maxAngSpeed ), math.Clamp( angularVelocity.y, -maxAngSpeed, maxAngSpeed ), math.Clamp( angularVelocity.z, -maxAngSpeed, maxAngSpeed ) ))
 		
 		v:setGridPos(v:getGridPos() + v:getVelocity() * dt)	-- Set noSync to true, don't send the position, the clients compute it

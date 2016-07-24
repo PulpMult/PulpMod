@@ -1,0 +1,13 @@
+"UnlitGeneric"
+{
+   "$basetexture" "grandespace/warp"
+   "Proxies"
+   {
+      "AnimatedTexture"
+      {
+         "animatedtexturevar" "$basetexture"
+         "animatedtextureframenumvar" "$frame"
+         "animatedtextureframerate" 31
+      }
+   }
+}

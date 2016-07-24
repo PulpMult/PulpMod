@@ -1,0 +1,5 @@
+VertexLitGeneric
+{
+	$basetexture grandespace\planet_shadow
+	$translucent 1
+}

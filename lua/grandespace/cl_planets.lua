@@ -15,7 +15,7 @@ planets["earth"] = {
 	shadowAnglele = Angle(0, 0, 95),
 	atmosphereSize = 0.006,
 	atmosphereColor = Color(152, 206, 252, 50),
-	material = Material("marmotte/earth.png"),
+	material = Material("grandespace/earth.png"),
 	colorModulation = { 0.8, 0.8, 0.8 },
 	rotationAxis = Vector(0, 0, 1),
 	rotationSpeed = 0.1,
@@ -96,6 +96,7 @@ hook.Add("InitPostEntity", "GrandEspace - Planets", function()
 
 		shipPos = ship:getGridPosLerp()
 		shipAngle = ship:getGridAngleLerp()
+		if GrandEspace.getThirdPerson() then shipAngle = Angle() end
 		pocketPos = ship:getPocketPos()
 
 		dt = CurTime() - lastPlanetUpdate
@@ -115,7 +116,7 @@ hook.Add("InitPostEntity", "GrandEspace - Planets", function()
 			renderPos = shipPos + relative*planetRender.scale
 			pos, ang = WorldToLocal(renderPos, v.gridAngle, shipPos, shipAngle)
 			planetRender.pos, planetRender.ang = LocalToWorld(pos, ang, pocketPos, defAngle)
-
+			
 			-- Compute shadow angle
 			planetRender.shadowAngle = LocalToWorldAngle(WorldToLocalAngle(v.shadowAnglele, shipAngle), defAngle)
 		end
@@ -123,7 +124,7 @@ hook.Add("InitPostEntity", "GrandEspace - Planets", function()
 end)
 
 local renderMat = CreateMaterial("planet_texture", "VertexLitGeneric")
-local shadowMat = Material("marmotte/planet_shadow")
+local shadowMat = Material("grandespace/planet_shadow")
 local fogMode, ent, planetPos, planetAng, planetScale, planetDist, shadowDir, shadowAngle, shadowOffset, planetRender, shadow
 
 hook.Add("PreDrawTranslucentRenderables", "GrandEspace - Planets", function()
