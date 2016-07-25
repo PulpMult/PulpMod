@@ -109,27 +109,27 @@ function ENT:Think()
 		
 		// Drag
 		if acceleration.x == 0 then
-			acceleration.x = -velocity.x ^ 0.5
+			acceleration.x = -velocity.x
 		end
 		
 		if acceleration.y == 0 then
-			acceleration.y = -velocity.y ^ 0.5
+			acceleration.y = -velocity.y
 		end
 		
 		if acceleration.z == 0 then
-			acceleration.z = -velocity.z ^ 0.5
+			acceleration.z = -velocity.z
 		end
 		
 		if angularAcceleration.x == 0 then
-			angularAcceleration.x = -angVelocity.x ^ 0.5
+			angularAcceleration.x = -angVelocity.x
 		end
 		
 		if angularAcceleration.y == 0 then
-			angularAcceleration.y = -angVelocity.y ^ 0.5
+			angularAcceleration.y = -angVelocity.y
 		end
 		
 		if angularAcceleration.z == 0 then
-			angularAcceleration.z = -angVelocity.z ^ 0.5
+			angularAcceleration.z = -angVelocity.z
 		end
 		
 		ship:setAcceleration( acceleration, true )
