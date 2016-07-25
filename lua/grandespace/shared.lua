@@ -1,6 +1,7 @@
 AddCSLuaFile()
 
 include("sh_vector2.lua")
+include("sh_vector3.lua")
 include("sh_world.lua")
 include("sh_player_functions.lua")
 include("sh_spaceship.lua")
