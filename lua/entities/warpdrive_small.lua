@@ -173,13 +173,9 @@ end
 net.Receive("PulpMod_WarpDrive", function(len)
 	local ent = net.ReadEntity()
 	ent.state = net.ReadFloat()
-
+	
 	local ship = ent.parentSpaceship
 	local inHyperSpace = ent.state == PHASE_MOVING
-	
-	if ent.state == PHASE_IDLE then
-		LocalPlayer():EmitSound( "warpdrive_boom" )
-	end
 
 	if ship then
 		ent.parentSpaceship:setInHyperSpace(inHyperSpace)
@@ -189,11 +185,14 @@ net.Receive("PulpMod_WarpDrive", function(len)
 
 		if ent.parentSpaceship == LocalPlayer():getSpaceship() then
 			toggleHyperSpace(inHyperSpace)
-
+			
 			if ent.state == PHASE_LOADING then
 				LocalPlayer():EmitSound("warpdrive_load")
 			elseif ent.state == PHASE_MOVING then
+				LocalPlayer():StopSound("warpdrive_load")
 				LocalPlayer():EmitSound("warpdrive_jump")
+			elseif ent.state == PHASE_IDLE then
+				LocalPlayer():EmitSound( "warpdrive_boom" )
 			end
 		end
 	end	
