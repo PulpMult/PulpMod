@@ -24,7 +24,7 @@ local function registerEntity( cat, ent, name, icon )
 
 end
 
-registerEntity( "Controllers", "warpdrive_small", "Warp drive", "materials/icon16/control_fastforward.png" )
+registerEntity( "Controllers", "grandespace_warpdrive", "Warp drive", "materials/icon16/control_fastforward.png" )
 registerEntity( "Controllers", "pilot_interface", "Piloting interface", "materials/icon16/car.png" )
 registerEntity( "Modules", "grandespace_module_receptacle", "Module holder", "materials/icon16/briefcase.png" )
 

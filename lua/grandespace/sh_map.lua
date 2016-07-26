@@ -2,17 +2,6 @@ if SERVER then
 
 	AddCSLuaFile()
 
-	util.AddNetworkString("GrandEspace - Show map")
-
-	hook.Add("ShowSpare1", "GrandEspace - Show map", function( ply )
-
-		if not IsValid(ply) then return end
-
-		net.Start("GrandEspace - Show map")
-		net.Send(ply)
-
-	end)
-
 else
 
 	local Vector2 = GrandEspace.Vector2
@@ -167,6 +156,22 @@ else
 
 	end
 
+	local verticesCircle = {}
+	for i=1, 50 do
+		verticesCircle[#verticesCircle+1] = { x=0, y=0 }
+	end
+
+	local function drawFilledCircle( pos, radius )
+
+		local vertCount = #verticesCircle
+		for i=1, vertCount do
+			verticesCircle[i].x = pos.x + math.cos(i/vertCount*2*math.pi)*radius
+			verticesCircle[i].y = pos.y + math.sin(i/vertCount*2*math.pi)*radius
+		end
+
+		surface.DrawPoly( verticesCircle )
+	end
+
 	local vertices = {{}, {}, {}, {}}
 
 	function PANEL:Paint( w, h )
@@ -188,6 +193,21 @@ else
 			local s = 0.1*pxPerUnit
 
 			surface.DrawOutlinedRect( pos.x-s/2, pos.y-s/2, s, s)
+
+			if self.warpRange then
+				surface.SetDrawColor(Color(255,255,255,10))
+				drawFilledCircle(pos, self.warpRange*pxPerUnit)
+			end
+
+		end
+		if self.starSelected then
+
+
+			local pos = (self.starSelected[2] - windowPos) * pxPerUnit + Vector2(w,h)/2
+			surface.SetDrawColor( Color(50,200,50,255) )
+			local s = 0.1*pxPerUnit
+			surface.DrawOutlinedRect( pos.x-s/2, pos.y-s/2, s, s)
+
 		end
 		
 
@@ -283,6 +303,50 @@ else
 
 		if keycode == MOUSE_MIDDLE  then
 			self:ungrab()
+		elseif keycode == MOUSE_LEFT or keycode == MOUSE_RIGHT then
+
+			local pxPerUnit = self.window.pixelPerUnit
+			local a,b = self:LocalCursorPos()
+			local w,h = self:GetWide(), self:GetTall()
+
+			local cursorPos = ( Vector2(a,b) - Vector2(w,h)/2) / pxPerUnit + self.window.pos
+			
+			local result = sql.Query("SELECT * FROM " .. GrandEspace.sqlStarTable .. " WHERE ((X-(" .. cursorPos.x .."))*(X-(" .. cursorPos.x .."))+(Y-(" .. cursorPos.y .."))*(Y-(" .. cursorPos.y .."))) <= " .. math.pow(20/pxPerUnit,2) .. " ORDER BY ((X-(" .. cursorPos.x .."))*(X-(" .. cursorPos.x .."))+(Y-(" .. cursorPos.y .."))*(Y-(" .. cursorPos.y .."))) LIMIT 1")
+			if result then
+
+				local spos = Vector2(tonumber(result[1].x), tonumber(result[1].y))
+				local ship = LocalPlayer():getSpaceship()
+
+				if keycode == MOUSE_LEFT then
+					if ship and self.warpRange and ship:getGalaxyPos():Distance(spos) <= self.warpRange then
+						self.starSelected = {result[1].id, spos }
+
+						net.Start("GrandEspace - Change hyperspace target")
+
+							net.WriteUInt(tonumber(result[1].id), 64)
+							net.WriteVector2(spos)
+
+						net.SendToServer()
+
+					end
+				elseif LocalPlayer().hyperspaceEnt and self.starSelected then
+					local menu = DermaMenu()
+					menu:AddOption( "Jump", function()
+						net.Start("PulpMod_WarpDrive")
+							net.WriteEntity(LocalPlayer().hyperspaceEnt)
+							net.WriteFloat(2) -- == PHASE_LOADING ... Hardcoded
+							print("ppooos", self.starSelected[2])
+							net.WriteVector2(self.starSelected[2])
+						net.SendToServer()
+					end )
+					menu:Open()
+				end
+			
+				
+			end
+			
+		elseif keyCode == MOUSE_RIGHT then
+			
 		end
 
 	end
@@ -319,25 +383,26 @@ else
 
 	local function showMap( )
 
-		local scale = 0.80
+		local ship = LocalPlayer():getSpaceship()
+		if ship then
 
-		local mapFrame = vgui.Create( "DFrame" )
-		mapFrame:SetPos( (w*(1-scale))/2, (h*(1-scale))/2 +100)
-		mapFrame:SetSize( w*scale, h*scale )
-		mapFrame:SetTitle( "MAP" )
-		mapFrame:MakePopup()
+			local scale = 0.80
 
-		local mapPanel = mapFrame:Add("GrandEspace - MapPanel")
-		mapPanel:SetPos(2,24)
-		mapPanel:SetSize(w*scale - 4, h*scale - 26)
+			local mapFrame = vgui.Create( "DFrame" )
+			mapFrame:SetPos( (w*(1-scale))/2, (h*(1-scale))/2 +100)
+			mapFrame:SetSize( w*scale, h*scale )
+			mapFrame:SetTitle( "MAP" )
+			mapFrame:MakePopup()
+
+			local mapPanel = mapFrame:Add("GrandEspace - MapPanel")
+			mapPanel:SetPos(2,24)
+			mapPanel:SetSize(w*scale - 4, h*scale - 26)
+
+			mapPanel.window.pos = ship:getGalaxyPos()
+
+		end
 
 	end
-
-	net.Receive("GrandEspace - Show map", function()
-
-		showMap()
-		
-	end)
 
 end
 
