@@ -79,7 +79,7 @@ if CLIENT then
 			for k,v in pairs(World.spaceships) do
 				-- Position and orientation of the ship in the world
 				local shipWorldPos, shipWorldAng = fromGridToWorld(gridPos, gridAng, pocketPos, v:getGridPosLerp(), v:getGridAngleLerp())
-				
+
 				if shipWorldPos then
 					if ((not thirdPerson and ship ~= v) or thirdPerson) and ship:getGalaxyPos() == v:getGalaxyPos() then
 						for _,ent in pairs(v.entities) do
