@@ -4,7 +4,6 @@ Spaceship = {}
 Spaceship.__index = Spaceship
 
 local Vector2 = GrandEspace.Vector2
-local Vector3 = GrandEspace.Vector3
 local World = GrandEspace.World
 
 -- Utility functions
@@ -26,20 +25,20 @@ function Spaceship.new()
 	self = setmetatable( {}, Spaceship)
 
 	self.galaxyPos = Vector2(0, 5e-6)
-	self.gridPos   = Vector3()
-	self.pocketPos  = Vector3()
+	self.gridPos   = Vector()
+	self.pocketPos  = Vector()
 	self.gridAngle = Angle()
 
-	self.originalPos = Vector3()
+	self.originalPos = Vector()
 
 	self.velocity = Vector()
-	self.acceleration = Vector3()
+	self.acceleration = Vector()
 
 	self.angularVelocity = Angle()
 	self.angularAcceleration = Angle()
 	
-	self.bb_pos = Vector3()
-	self.bb_size = Vector3()
+	self.bb_pos = Vector()
+	self.bb_size = Vector()
 
 	self.entities = {}
 	self.inHyperSpace = false
@@ -52,7 +51,7 @@ function Spaceship.new()
 		"entities", "inHyperSpace",
 		"angularVelocity", "angularAcceleration" }
 
-	self.prevGridPos = Vector3()
+	self.prevGridPos = Vector()
 	self.prevGridAngle = Angle()
 
 	self.id = 0

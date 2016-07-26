@@ -6,7 +6,7 @@ VECTOR3.__index = VECTOR3
 debug.getregistry().Vector3 = VECTOR3
 
 function isvector3( v )
-	return ( v and istable(v) and getmetatable(v) == VECTOR3 ) or isvector( v )
+	return v and istable(v) and getmetatable(v) == VECTOR3
 end
 
 _TypeID = _TypeID or TypeID
@@ -20,7 +20,7 @@ function TypeID( ... )
 end
 
 net.WriteVars[253] = function( t, v ) 
-	net.WriteUInt( t, 8 )
+	net.WriteUInt( t, 8 ) -- Is this length, if so, probably a good idea to increase it.
 	net.WriteVector3( v )
 end
 
