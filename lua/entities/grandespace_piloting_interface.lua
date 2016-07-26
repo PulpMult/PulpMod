@@ -5,7 +5,6 @@ DEFINE_BASECLASS("base_wire_entity")
 ENT.PrintName = "Piloting Interface"
 ENT.Author = "Doctor Who"
 
-ENT.RenderGroup = RENDERGROUP_OPAQUE
 ENT.WireDebugName = ENT.PrintName
 
 function ENT:Initialize()
