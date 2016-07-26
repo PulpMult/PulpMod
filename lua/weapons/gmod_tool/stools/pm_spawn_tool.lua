@@ -16,8 +16,11 @@ local function registerEntity( cat, ent, name, icon )
 	icons[ ent ] = icon
 end
 
-registerEntity( "Warpdrives", "warpdrive_small", "Warp Drive (small)", "materials/icon16/control_fastforward.png" )
-registerEntity( "Other", "pilot_interface", "Piloting Interface", "materials/icon16/car.png" )
+registerEntity( "Controllers", "warpdrive_small", "Warp drive", "materials/icon16/control_fastforward.png" )
+registerEntity( "Controllers", "pilot_interface", "Piloting interface", "materials/icon16/car.png" )
+registerEntity( "Modules", "grandespace_module_warp", "Module LV0: Warp", "materials/icon16/add.png" )
+registerEntity( "Modules", "grandespace_module_receptacle", "Module holder", "materials/icon16/briefcase.png" )
+
 
 for k, v in pairs( entities ) do
 	cleanup.Register( k )

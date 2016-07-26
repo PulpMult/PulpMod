@@ -4,9 +4,6 @@ ENT.Base = "grandespace_module"
 ENT.PrintName		= "Module"
 ENT.Author			= "Poulpe"
 
-ENT.Spawnable       = true
-ENT.Category		= "GrandEspace"
-
 if SERVER then
 
 	AddCSLuaFile()
