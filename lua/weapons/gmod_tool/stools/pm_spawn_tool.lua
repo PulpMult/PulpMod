@@ -26,8 +26,11 @@ end
 
 registerEntity( "Controllers", "warpdrive_small", "Warp drive", "materials/icon16/control_fastforward.png" )
 registerEntity( "Controllers", "pilot_interface", "Piloting interface", "materials/icon16/car.png" )
-registerEntity( "Modules", "grandespace_module_warp", "Module LV0: Warp", "materials/icon16/add.png" )
 registerEntity( "Modules", "grandespace_module_receptacle", "Module holder", "materials/icon16/briefcase.png" )
+
+registerEntity( "Modules", "grandespace_module_warp", "Basic warp module", "materials/icon16/add.png" )
+registerEntity( "Modules", "grandespace_module_lifesupport", "Basic life suport module", "materials/icon16/add.png" )
+registerEntity( "Modules", "grandespace_module_shield", "Basic shield module", "materials/icon16/add.png" )
 
 if CLIENT then
 	language.Add( "tool.pm_spawn_tool.name", "Spawn tool" )
