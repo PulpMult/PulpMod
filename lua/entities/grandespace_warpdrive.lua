@@ -153,6 +153,7 @@ if SERVER then
 	net.Receive("GrandEspace - Change hyperspace target", function(_, ply)
 
 		local targetStar = net.ReadUInt(64)
+		print(targetStar, type(targetStar))
 		local targetPos = net.ReadVector2() -- easier to send to send the vector than searching the star in the table (im lazy) -- Poulpe
 		local e = ply.lastHyperSpaceEntity
 		if IsValid(e) and e.parentSpaceship then

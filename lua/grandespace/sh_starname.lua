@@ -69,7 +69,8 @@ function GrandEspace.getStarName( id )
 
     return name
 end
-
-http.Fetch("https://dl.dropboxusercontent.com/u/47284930/jsonnames.txt", function(str, len)
-	nextLetter =  util.JSONToTable(str)
+hook.Add("Initialize", "GrandEspace - Get the letters probas", function()
+    http.Fetch("https://dl.dropboxusercontent.com/u/47284930/jsonnames.txt", function(str, len)
+    	nextLetter =  util.JSONToTable(str)
+    end)
 end)
