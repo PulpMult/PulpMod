@@ -10,11 +10,11 @@ if SERVER then
 
 	function ENT:initModule()
 
-		self.moduleCategory = "WarpDrive"
+		self.moduleCategory = "LifeSupport"
 		self.level = 0
 
-		self:SetColor(Color(60,110,255))
-
+		self:SetColor(Color(33,255,0))
+		
 	end
 
 else
@@ -23,7 +23,7 @@ else
 
 	    self:DrawModel()
 	    if LocalPlayer():GetEyeTrace().Entity == self then 
-  			AddWorldTip( nil, "Warp drive module level 0", nil, nil, self  ) 
+  			AddWorldTip( nil, "Life support module level 0", nil, nil, self  ) 
   		end
 
   	end

@@ -4,9 +4,6 @@ ENT.Base = "base_gmodentity"
 ENT.PrintName		= "Module receptacle"
 ENT.Author			= "Poulpe"
 
-ENT.Spawnable       = true
-ENT.Category		= "GrandEspace"
-
 if SERVER then
 	AddCSLuaFile()
 
@@ -42,8 +39,10 @@ if SERVER then
 			self.currentModule.moduleReceptacle = nil
 			self.currentModule = nil
 
+			local a = self.ignoredModule
+
 			timer.Simple(1, function()
-				if IsValid(self) then
+				if IsValid(self) and self.ignoredModule == a then
 					self.ignoredModule = nil
 				end
 			end)

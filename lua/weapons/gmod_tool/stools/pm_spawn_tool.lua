@@ -6,40 +6,36 @@ TOOL.ClientConVar["selected"] = "prop_physics"
 
 AddCSLuaFile()
 
-local entities = {}
-local nodes = {}
-local icons = {}
+local categories = {}
+local lookupTableName = {}
 
 local function registerEntity( cat, ent, name, icon )
-	entities[ ent ] = name
-	nodes[ ent ] = cat
-	icons[ ent ] = icon
-end
 
-registerEntity( "Warpdrives", "warpdrive_small", "Warp Drive (small)", "materials/icon16/control_fastforward.png" )
-registerEntity( "Other", "pilot_interface", "Piloting Interface", "materials/icon16/car.png" )
+	local t = categories[cat] or {}
+	t[#t+1] = {ent, name, icon}
+	categories[cat] = t
+	lookupTableName[ent] = name
 
-for k, v in pairs( entities ) do
-	cleanup.Register( k )
+	cleanup.Register( name )
 	
 	if CLIENT then
-		language.Add( "Cleanup_" .. k, v )
+		language.Add( "Cleanup_" .. name, ent )
 	end
+
 end
+
+registerEntity( "Controllers", "grandespace_warpdrive", "Warp drive", "materials/icon16/control_fastforward.png" )
+registerEntity( "Controllers", "pilot_interface", "Piloting interface", "materials/icon16/car.png" )
+registerEntity( "Modules", "grandespace_module_receptacle", "Module holder", "materials/icon16/briefcase.png" )
+
+registerEntity( "Modules", "grandespace_module_warp", "Basic warp module", "materials/icon16/add.png" )
+registerEntity( "Modules", "grandespace_module_lifesupport", "Basic life suport module", "materials/icon16/add.png" )
+registerEntity( "Modules", "grandespace_module_shield", "Basic shield module", "materials/icon16/add.png" )
 
 if CLIENT then
 	language.Add( "tool.pm_spawn_tool.name", "Spawn tool" )
 	language.Add( "tool.pm_spawn_tool.desc", "Use it to spawn spaceship components." )
 	language.Add( "tool.pm_spawn_tool.0", "Click to spawn the component." )
-
-	local function addComponent( tree, ent )
-		local sub = nodes[ ent ]
-		sub:SetExpanded(true)
-
-		local node = sub:AddNode( entities[ ent ] )
-		node.Icon:SetImage( icons[ ent ] )
-		node.path = ent
-	end
 	
 	function TOOL.BuildCPanel(CPanel)
 		SUPERPANEL = CPanel
@@ -55,19 +51,30 @@ if CLIENT then
 			end
 		end
 
-		for k, v in pairs( nodes ) do
-			nodes[ k ] = dtree:AddNode( v )
-		end
 		
 		local sx, sy = CPanel:GetSize()
 		local xmargin = 15
 		
 		dtree:SetPos(xmargin, 60)
 		dtree:SetSize(sx - 2*xmargin, 240)
+
+
+		for categoryName, entitiesInCat in pairs( categories ) do
+
+			local catNode = dtree:AddNode( categoryName )
+			catNode:SetExpanded(true)
+
+			for _, ent in pairs(entitiesInCat) do
 		
-		for k, v in pairs( entities ) do
-			addComponent( dtree, k )
+				local node = catNode:AddNode( ent[2] )
+				node.Icon:SetImage( ent[3] )
+				node.path = ent[1]
+
+				print(categoryName,  ent[2])
+
+			end
 		end
+
 	end
 end
 
@@ -90,10 +97,10 @@ function TOOL:LeftClick(trace)
 
 	local ply = self:GetOwner()
 
-	undo.Create( entities[ selected ] )
+	undo.Create( lookupTableName[ selected ] )
 		undo.AddEntity( entity )
 		undo.SetPlayer( ply )
-		undo.SetCustomUndoText("Undone " .. entities[ selected ] )
+		undo.SetCustomUndoText("Undone " .. lookupTableName[ selected ] )
 		cleanup.Add( ply, entity.PrintName, entity )
 	undo.Finish()
 
