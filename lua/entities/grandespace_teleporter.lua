@@ -4,7 +4,7 @@ ENT.PrintName = "Teleporter"
 ENT.Author = "Doctor Who"
 
 ENT.Type = "anim"
-ENT.Base = "base_gmodentity"
+ENT.Base = "base_anim"
 
 function ENT:Initialize()
 	if CLIENT then return end
