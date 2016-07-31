@@ -35,17 +35,38 @@ if CLIENT then
 	surface.CreateFont( "PanelFont", { font = "DermaLarge", size = 96, weight = 500 } )
 end
 
--- pos, size, label and onClick
-local function drawButton( x, y, w, h, t, f )
-	draw.RoundedBox( 0, x, y, w, h, Color( 255, 255, 255 ) )
-	draw.SimpleText( t, "PanelFont", x + w/2, y + h/2, Color( 0, 0, 0 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+-- Taken from https://maurits.tv/data/garrysmod/wiki/wiki.garrysmod.com/indexedb0.html
+local function worldToScreen(vWorldPos,vPos,vScale,aRot)
+	local vWorldPos=vWorldPos-vPos
+	vWorldPos:Rotate(Angle(0,-aRot.y,0))
+	vWorldPos:Rotate(Angle(-aRot.p,0,0))
+	vWorldPos:Rotate(Angle(0,0,-aRot.r))
+	return vWorldPos.x/vScale,(-vWorldPos.y)/vScale
 end
 
-local function drawCursor()
-	local pos, rot = EyePos(), EyeAngles()
-	local x, y = 0, 0
-	-- Some highly advanced magical equations will go here.
-	draw.RoundedBox( 0, x - 4, y - 4, 8, 8, Color( 255, 255, 255 ) )
+local function getCursorPos( camPos, camRot, rot )
+	local hitPos = util.IntersectRayWithPlane( EyePos(), EyeVector(), camPos, rot:Forward() )
+	if not hitPos then return end
+	
+	local x, y = worldToScreen( hitPos, camPos, 0.025, camRot )
+	return { x = x, y = y }
+end
+
+-- pos, size, label, onClick and cursor position
+local function drawButton( x, y, w, h, t, f, c )
+	local hover = false
+	
+	if c and c.x > x and c.y > y and c.x < x + w and c.y < y + h then
+		hover = true
+	end
+
+	if hover then
+		draw.RoundedBox( 0, x, y, w, h, Color( 0, 149, 255 ) )
+		draw.SimpleText( t, "PanelFont", x + w/2, y + h/2, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	else
+		draw.RoundedBox( 0, x, y, w, h, Color( 255, 255, 255 ) )
+		draw.SimpleText( t, "PanelFont", x + w/2, y + h/2, Color( 0, 0, 0 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	end
 end
 
 -- I need to draw a quad using render.DrawQuad() and not 3d2d camera because of depth buffer issues.
@@ -53,15 +74,18 @@ local function drawPanel( pos, rotation )
 	render.SetColorMaterial()
 	render.DrawQuadEasy( pos, rotation:Forward(), 40, 40, Color( 0, 0, 0, 255 ), 0 )
 	
-	-- Now I need to draw the GUI. I wonder how can I make the button without using hacky sphagetti code...
-	cam.Start3D2D( pos + rotation:Right() * 20 + rotation:Up() * 20, Angle( rotation.x, rotation.y + 90, rotation.z + 90 ), 0.025 )
-		drawButton( 80, 80, 500, 100, "BUTTON", nil )
-		drawCursor()
+	local camPos = pos + rotation:Right() * 20 + rotation:Up() * 20
+	local camRot = Angle( rotation.x, rotation.y + 90, rotation.z + 90 )
+	cam.Start3D2D( camPos, camRot, 0.025 )
+		local cpos = getCursorPos( camPos, camRot, rotation )
+		
+		drawButton( 80, 80, 500, 100, "BUTTON", nil, cpos )
 	cam.End3D2D()
 end
 
 function ENT:Draw()
 	self:DrawModel()
+	
 	drawPanel( self:GetPos() + self:GetUp() * 50 + self:GetForward() * 40, self:GetAngles() )
 end
 
