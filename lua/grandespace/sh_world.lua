@@ -147,6 +147,10 @@ else -- SERVER
 			end
 		net.Broadcast(players)
 	end
+	
+	hook.Add("PlayerSpawn", "GrandEspace - Sync on initial spawn", function()
+		syncSpaceships(player.GetAll(), true)
+	end)
 
 	hook.Add("Tick", "GrandEspace - Synchronize the world", function()
 		World.spaceTime = SysTime()
